@@ -1,0 +1,16 @@
+---
+
+- name: Provision infrastructure
+  hosts: localhost
+  roles:
+    - { role: opentelekomcloud.keypair, keypair_name: "{{ test_keypair_name }}" }
+    - { role: opentelekomcloud.vpc }
+    - { role: opentelekomcloud.bastion, server_keypair_name: "{{ test_keypair_name }}" }
+
+# - name: cleanup infrastructure
+#   hosts: localhost
+#   vars:
+#     state: 'absent'
+#   roles:
+#     - { role: opentelekomcloud.keypair, keypair_name: "{{ test_keypair_name }}" }
+#     - { role: opentelekomcloud.vpc }

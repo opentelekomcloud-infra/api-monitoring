@@ -1,0 +1,10 @@
+---
+
+  - name: remove infrastructure
+    hosts: localhost
+    vars:
+      state: 'absent'
+    roles:
+      - { role: opentelekomcloud.bastion }
+      - { role: opentelekomcloud.keypair, keypair_name: "{{ test_keypair_name }}" }
+      - { role: opentelekomcloud.vpc }

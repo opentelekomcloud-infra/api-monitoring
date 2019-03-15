@@ -1,0 +1,6 @@
+.ansible_*
+inv.log
+inventory/production
+__pycache__
+*.retry
+roles/gtema.*
