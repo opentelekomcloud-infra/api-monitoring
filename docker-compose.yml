@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+  executor:
+    build: ./configs/executor
+    # image: executor
+    volumes:
+      - ./inventory/production/clouds.yaml:/etc/openstack/clouds.yaml
+
+  telegraf:
+    ports:
+      - "8125:8125/udp"
+      - "9273:9273"
+    image: telegraf
+    volumes:
+      - ./configs/telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro,Z
+
+  prometheus:
+    ports:
+      - 9090:9090
+    depends_on:
+      - telegraf
+    image: prom/prometheus
+    volumes:
+      - ./configs/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro,Z
+      - prometheus_data:/prometheus:Z
+
+  grafana:
+    ports:
+      - 3000:3000
+    depends_on:
+      - prometheus
+    image: grafana/grafana
+    volumes:
+      - grafana_data:/var/lib/grafana:Z
+      - ./configs/grafana/provisioning/:/etc/grafana/provisioning/:Z
+    env_file:
+      - ./configs/grafana/config.monitoring
+
+volumes:
+  prometheus_data:
+  grafana_data:

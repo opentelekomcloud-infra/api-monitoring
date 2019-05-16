@@ -116,24 +116,39 @@ class CallbackModule(CallbackBase):
         """
         Logs the start of each task
         """
-        self._display.display(tasktime())
-        timestamp(self)
+        # self._display.display(tasktime())
+        # timestamp(self)
 
         # Record the start time of the current task
-        self.current = task._uuid
-        self.stats[self.current] = {
-            'time': time.time(),
-            'name': task.get_name(),
-            'action': task.action,
-        }
-        if self._display.verbosity >= 2:
-            self.stats[self.current]['path'] = task.get_path()
+        if task.action.startswith('os_'):
+            self.current = task._uuid
+            self.stats[self.current] = {
+                'time': time.time(),
+                'name': task.get_name(),
+                'action': task.action,
+            }
+            if self._display.verbosity >= 2:
+                self.stats[self.current]['path'] = task.get_path()
+
 
     def v2_playbook_on_task_start(self, task, is_conditional):
-        self._record_task(task)
+        # self._record_task(task)
+        if task.action.startswith('os_'):
+            self._display.display((task.vars)))
+            self.current = task._uuid
+            self.stats[self.current] = {
+                'start': time.time_ns(),
+                'name': task.get_name(),
+                'action': task.action,
+                'task': task
+            }
+            if self._display.verbosity >= 2:
+                self.stats[self.current]['path'] = task.get_path()
+        else:
+            self.current = None
 
-    def v2_playbook_on_handler_task_start(self, task):
-        self._record_task(task)
+    # def v2_playbook_on_handler_task_start(self, task):
+        # self._record_task(task)
 
     def v2_runner_on_skipped(self, result):
         # Task was skipped - remove stats
@@ -143,43 +158,66 @@ class CallbackModule(CallbackBase):
 
     def v2_runner_on_ok(self, result):
         if self.current is not None:
-            self.stats[self.current].update({'result': result._result})
+            self.stats[self.current].update({
+                'changed': result._result['changed'],
+                'result': result._result,
+                'end': time.time_ns(),
+                'duration': time.time_ns() - self.stats[self.current]['start'],
+                'rc': 0
+            })
 
-    def playbook_on_setup(self):
-        self._display.display(tasktime())
+    def v2_runner_on_failed(self, result, ignore_errors=False):
+        if self.current is not None:
+            self.stats[self.current].update({
+                'changed': result._result['changed'],
+                'result': result._result,
+                'end': time.time_ns(),
+                'duration': time.time_ns() - self.stats[self.current]['start'],
+                'rc': 2
+            })
+
+    # def playbook_on_setup(self):
+        # self._display.display(tasktime())
 
     def playbook_on_stats(self, stats):
         self._display.display(tasktime())
         self._display.display(filled("", fchar="="))
 
-        timestamp(self)
-
         # filter only interesting os_* modules
-        results = filter(
-            lambda x: x[1]['action'].startswith('os_'),
-            self.stats.items()
-        )
+        # results = filter(
+        #     lambda x: x[1]['action'].startswith('os_'),
+        #     self.stats.items()
+        # )
+        results = self.stats.items()
 
         # Sort the tasks by the specified sort
         if self.sort_order is not None:
             results = sorted(
                 results,
-                key=lambda x: x[1]['time'],
+                key=lambda x: x[1]['duration'],
                 reverse=self.sort_order,
             )
 
         # Print the timings
         for uuid, result in results:
-            item_name = '_'.join(filter(None, (
+            # item_name = '_'.join(filter(None, (
+            #     result['action'],
+            #     result['result']['invocation']['module_args'].get('state', None),
+            #     None if result['result']['changed'] else u'unchanged'
+            # )))
+            # msg = u"{0:-<{2}}{1:->9}".format(
+            #     item_name + u' ',
+            #     u' {0:.02f}s'.format(result['time']),
+            #     self._display.columns - 9)
+            msg = u"module={0},state={1} duration={2:.02f},changed={3} {4}".format(
                 result['action'],
                 result['result']['invocation']['module_args'].get('state', None),
-                None if result['result']['changed'] else u'unchanged'
-            )))
-            msg = u"{0:-<{2}}{1:->9}".format(
-                item_name + u' ',
-                u' {0:.02f}s'.format(result['time']),
-                self._display.columns - 9)
+                result['duration']/1000000000,  # NS to Sec
+                result['changed'],
+                result['end']
+            )
             # if 'path' in result:
-            #     msg += u"\n{0:-<{1}}".format(result['path'] + u' ', self._display.columns)
+                # msg += u",path={0}".format(result['path'])
+            # msg + = u" {0:f}".format(result['end'])
             self._display.display(msg)
-            # self._display.display(str(result['result']['invocation']['module_args']))
+            self._display.display(str(result['task']))
