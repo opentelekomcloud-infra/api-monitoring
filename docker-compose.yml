@@ -6,15 +6,18 @@ services:
     # image: executor
     volumes:
       - ./inventory/production/clouds.yaml:/etc/openstack/clouds.yaml:Z
-    restart: unless-stopped
+    restart: always
 
   telegraf:
     ports:
       - "8125:8125/udp"
       - "9273:9273"
     image: telegraf
+    depends_on:
+      - influxdb
     volumes:
       - ./configs/telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro,Z
+    restart: always
 
   prometheus:
     ports:
@@ -25,6 +28,15 @@ services:
     volumes:
       - ./configs/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro,Z
       - prometheus_data:/prometheus:Z
+    restart: always
+
+  influxdb:
+    image: influxdb
+    ports:
+      - 8086:8086
+    volumes:
+      - influxdb_data:/var/lib/influxdb
+    restart: always
 
   grafana:
     ports:
@@ -37,7 +49,9 @@ services:
       - ./configs/grafana/provisioning/:/etc/grafana/provisioning/:Z
     env_file:
       - ./configs/grafana/config.monitoring
+    restart: always
 
 volumes:
   prometheus_data:
   grafana_data:
+  influxdb_data:

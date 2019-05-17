@@ -15,9 +15,126 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 1,
   "links": [],
   "panels": [
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "InfluxDB",
+      "fill": 1,
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 4,
+      "legend": {
+        "avg": true,
+        "current": false,
+        "max": true,
+        "min": true,
+        "rightSide": true,
+        "show": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "alias": "$tag_service.$tag_resource.$tag_method",
+          "groupBy": [
+            {
+              "params": [
+                "service"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
+                "resource"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
+                "method"
+              ],
+              "type": "tag"
+            }
+          ],
+          "measurement": "openstack_api",
+          "orderByTime": "ASC",
+          "policy": "autogen",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "90_percentile"
+                ],
+                "type": "field"
+              }
+            ]
+          ],
+          "tags": []
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Response times (InfluxDB)",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "90% Duration [ms]",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": "",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
     {
       "aliasColors": {},
       "bars": false,
@@ -30,7 +147,7 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 8
       },
       "id": 2,
       "legend": {
@@ -58,7 +175,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "openstack_api_mean",
+          "expr": "openstack_api_90_percentile",
           "format": "time_series",
           "instant": false,
           "intervalFactor": 1,
@@ -70,7 +187,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "API Response times",
+      "title": "API Response times (Prometheus)",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -87,7 +204,7 @@
       "yaxes": [
         {
           "format": "short",
-          "label": null,
+          "label": "90% Duration [ms]",
           "logBase": 1,
           "max": null,
           "min": null,
@@ -108,7 +225,7 @@
       }
     }
   ],
-  "refresh": false,
+  "refresh": "5s",
   "schemaVersion": 18,
   "style": "dark",
   "tags": [],
@@ -147,5 +264,5 @@
   "timezone": "",
   "title": "APIMonitoring",
   "uid": "cE-RriZZz",
-  "version": 2
+  "version": 4
 }
