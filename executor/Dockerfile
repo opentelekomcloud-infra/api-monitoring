@@ -40,6 +40,7 @@ RUN pip3 install --user -r /usr/app/requirements.txt
 
 COPY ./entrypoint.sh /usr/app
 COPY ./test.py /usr/app
+COPY ./proxy.py /root/.local/lib/python3.7/site-packages/openstack/proxy.py
 
 ENV OS_CLOUD=otc
 ENV PATH=/root/.local/bin:$PATH
