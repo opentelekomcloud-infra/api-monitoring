@@ -5,7 +5,7 @@
   ignore_errors: yes
   roles:
     - { role: opentelekomcloud.keypair, keypair_name: "{{ test_keypair_name }}" }
-    # - { role: opentelekomcloud.vpc, subnet_dns_servers: "crap" }
+    - { role: opentelekomcloud.vpc }
     # - { role: opentelekomcloud.bastion, server_keypair_name: "{{ test_keypair_name }}" }
 
 - name: cleanup infrastructure
@@ -14,4 +14,4 @@
     state: 'absent'
   roles:
     - { role: opentelekomcloud.keypair, keypair_name: "{{ test_keypair_name }}" }
-    # - { role: opentelekomcloud.vpc }
+    - { role: opentelekomcloud.vpc }
