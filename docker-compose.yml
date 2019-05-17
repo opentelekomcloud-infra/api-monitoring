@@ -2,10 +2,10 @@ version: '3'
 
 services:
   executor:
-    build: ./configs/executor
+    build: ./executor
     # image: executor
     volumes:
-      - ./inventory/production/clouds.yaml:/etc/openstack/clouds.yaml
+      - ./inventory/production/clouds.yaml:/etc/openstack/clouds.yaml:Z
 
   telegraf:
     ports:

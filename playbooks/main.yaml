@@ -8,10 +8,10 @@
     # - { role: opentelekomcloud.vpc, subnet_dns_servers: "crap" }
     # - { role: opentelekomcloud.bastion, server_keypair_name: "{{ test_keypair_name }}" }
 
-# - name: cleanup infrastructure
-#   hosts: localhost
-#   vars:
-#     state: 'absent'
-#   roles:
-#     - { role: opentelekomcloud.keypair, keypair_name: "{{ test_keypair_name }}" }
-#     - { role: opentelekomcloud.vpc }
+- name: cleanup infrastructure
+  hosts: localhost
+  vars:
+    state: 'absent'
+  roles:
+    - { role: opentelekomcloud.keypair, keypair_name: "{{ test_keypair_name }}" }
+    # - { role: opentelekomcloud.vpc }
