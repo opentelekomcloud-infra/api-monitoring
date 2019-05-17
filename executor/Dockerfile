@@ -36,9 +36,11 @@ RUN pip3 install --user -r /usr/app/requirements.txt
 #RUN dnf --disablerepo updates-modular --disablerepo fedora-modular \
 #    install -y ansible
 
-#COPY --from=builder /root/ /root
+#COPY --from=builder /root/.local/ /root/.local
 
 COPY ./entrypoint.sh /usr/app
 COPY ./test.py /usr/app
+
+ENV OS_CLOUD=otc
 
 CMD ["/usr/app/entrypoint.sh"]

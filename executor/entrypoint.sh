@@ -6,6 +6,8 @@ git clone https://github.com/opentelekomcloud-infra/api-monitoring
 
 cd api-monitoring
 
+chmod u+x ./executor/scripts/*.sh
+
 # while true; do
 #
 #   echo "Generating new values";
