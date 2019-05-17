@@ -6,6 +6,7 @@ services:
     # image: executor
     volumes:
       - ./inventory/production/clouds.yaml:/etc/openstack/clouds.yaml:Z
+    restart: unless-stopped
 
   telegraf:
     ports:
