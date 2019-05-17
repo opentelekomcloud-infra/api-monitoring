@@ -42,5 +42,6 @@ COPY ./entrypoint.sh /usr/app
 COPY ./test.py /usr/app
 
 ENV OS_CLOUD=otc
+ENV PATH=/root/.local/bin:$PATH
 
 CMD ["/usr/app/entrypoint.sh"]
