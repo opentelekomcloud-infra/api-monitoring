@@ -24,7 +24,7 @@ RUN git clone https://github.com/ansible/ansible --branch v2.8.0rc3 && \
     git clone https://review.opendev.org/openstack/openstacksdk && \
     cd openstacksdk && \
     git fetch https://review.opendev.org/openstack/openstacksdk \
-      refs/changes/48/657848/2 && git checkout FETCH_HEAD
+      refs/changes/41/659841/2 && git checkout FETCH_HEAD
 
 RUN cd openstacksdk && python3 setup.py install --user
 RUN cd ansible && python3 setup.py install --user
@@ -40,7 +40,7 @@ RUN pip3 install --user -r /usr/app/requirements.txt
 
 COPY ./entrypoint.sh /usr/app
 COPY ./test.py /usr/app
-COPY ./proxy.py /root/.local/lib/python3.7/site-packages/openstack/proxy.py
+# COPY ./proxy.py /root/.local/lib/python3.7/site-packages/openstack/proxy.py
 
 ENV OS_CLOUD=otc
 ENV PATH=/root/.local/bin:$PATH

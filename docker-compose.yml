@@ -12,6 +12,7 @@ services:
     ports:
       - "8125:8125/udp"
       - "9273:9273"
+      - "8186:8186"
     image: telegraf
     depends_on:
       - influxdb
