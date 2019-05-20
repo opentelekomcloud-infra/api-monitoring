@@ -23,12 +23,131 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "InfluxDB",
-      "fill": 1,
+      "fill": 0,
       "gridPos": {
         "h": 8,
         "w": 24,
         "x": 0,
         "y": 0
+      },
+      "id": 6,
+      "interval": "",
+      "legend": {
+        "avg": true,
+        "current": false,
+        "max": true,
+        "min": true,
+        "rightSide": true,
+        "show": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "percentage": false,
+      "pointradius": 2,
+      "points": true,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "alias": "$tag_service_type.$tag_name.$tag_method",
+          "groupBy": [
+            {
+              "params": [
+                "service_type"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
+                "method"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
+                "name"
+              ],
+              "type": "tag"
+            }
+          ],
+          "measurement": "openstack_api",
+          "orderByTime": "ASC",
+          "policy": "autogen",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "duration"
+                ],
+                "type": "field"
+              }
+            ]
+          ],
+          "tags": []
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Raw Response Times",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "Duration [ms]",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "InfluxDB",
+      "fill": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 8
       },
       "id": 4,
       "legend": {
@@ -142,12 +261,12 @@
       "dashes": false,
       "datasource": "Prometheus",
       "description": "Response times of the OpenStack APIs",
-      "fill": 1,
+      "fill": 0,
       "gridPos": {
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 8
+        "y": 16
       },
       "id": 2,
       "legend": {
@@ -264,5 +383,5 @@
   "timezone": "",
   "title": "APIMonitoring",
   "uid": "cE-RriZZz",
-  "version": 4
+  "version": 1
 }
