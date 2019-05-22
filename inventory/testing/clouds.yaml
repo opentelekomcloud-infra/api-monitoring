@@ -1,6 +1,13 @@
-statsd:
-  host: telegraf
-  port: 8125
+metrics:
+  statsd:
+    host: telegraf
+    port: 8125
+  influxdb:
+    host: telegraf
+    port: 8186
+    username: foobar
+    password: barfoo
+    measurement: openstack_api
 clouds:
   otc:
     auth:
