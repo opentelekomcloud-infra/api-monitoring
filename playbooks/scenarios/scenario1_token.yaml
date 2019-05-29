@@ -5,4 +5,4 @@
   ignore_errors: yes
   tasks:
     - name: Get token
-      os_auth: 
+      script: get_token.py

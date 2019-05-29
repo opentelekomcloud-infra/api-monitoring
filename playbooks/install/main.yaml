@@ -1,0 +1,7 @@
+---
+# Playbook to install APImon components
+
+- name: Provision telegraf instance
+  hosts: telegraf
+  roles:
+    - telegraf

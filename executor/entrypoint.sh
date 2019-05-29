@@ -21,7 +21,7 @@ chmod u+x ./executor/scripts/*.sh
 #   python3 test.py
 # done;
 
-for playbook in playbooks/*; do
+for playbook in playbooks/scenarios/*.yaml; do
   ./executor/scripts/execute_playbook.sh "${playbook}" &
 done
 wait

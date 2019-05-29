@@ -1,0 +1,29 @@
+---
+# tasks file for telegraf
+  - name: Prepare telegraf config dir
+    become: true
+    file:
+      path: /etc/telegraf
+      state: directory
+      recurse: yes
+
+  - name: Provision telegraf config
+    become: true
+    template:
+      src: telegraf.conf
+      dest: /etc/telegraf/telegraf.conf
+
+  - name: Start telegraf container
+    become: true
+    docker_container:
+      name: telegraf
+      image: telegraf
+      state: started
+      restart: true
+      pull: true
+      ports:
+        - "8125:8125/udp"
+        - "9273:9273"
+        - "8186:8186"
+      volumes:
+        - /etc/telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro,Z

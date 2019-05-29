@@ -1,0 +1,20 @@
+---
+# Playbook to install APImon components
+
+- name: Provision telegraf instance
+  hosts: all
+  become: true
+  # roles:
+  #   - opentelekomcloud.server_common
+  tasks:
+    - name: Install docker
+      package:
+        state: present
+        name: docker
+
+    - name: docker service
+      become: true
+      systemd:
+        name: docker
+        enabled: yes
+        state: started
