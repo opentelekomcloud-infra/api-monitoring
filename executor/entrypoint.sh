@@ -6,6 +6,8 @@ git clone https://github.com/opentelekomcloud-infra/api-monitoring
 
 cd api-monitoring
 
+git pull
+
 ansible-galaxy install -r requirements.yml
 
 chmod u+x ./executor/scripts/*.sh
