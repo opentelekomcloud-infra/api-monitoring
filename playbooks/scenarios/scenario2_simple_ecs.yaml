@@ -49,7 +49,7 @@
 
     - name: List Servers
       os_server_facts:
-    #
+
     - name: Create Server with all required resources
       include_role:
         name: opentelekomcloud.bastion
@@ -90,6 +90,7 @@
         name: opentelekomcloud.bastion
       vars:
         state: absent
+        server_fqdn: "{{ test_server_fqdn }}"
 
     - name: Delete SecurityGroupRule
       os_security_group_rule:
