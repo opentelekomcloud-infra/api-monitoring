@@ -1,0 +1,11 @@
+---
+# Inventory variables for Executor hosts
+#
+
+telegraf_image_tag: "1.11.0"
+telegraf_ssl_cert_name: cert.pem
+telegraf_ssl_cert_content: "{{ apimon_ssl_cert_content }}"
+telegraf_ssl_key_name: key.pem
+telegraf_ssl_key_content: "{{ apimon_ssl_key_content }}"
+telegraf_ssl_ca_cert_name: ca.pem
+telegraf_ssl_ca_cert_content: "{{ apimon_ssl_ca_cert_content }}"

@@ -1,0 +1,7 @@
+---
+# Playbook to install InfluxDB
+
+- name: Provision Grafana
+  hosts: grafana
+  roles:
+    - grafana

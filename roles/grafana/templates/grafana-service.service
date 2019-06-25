@@ -1,0 +1,39 @@
+[Unit]
+Description=Grafana Podman container
+Wants=syslog.service
+
+[Service]
+Type=simple
+TimeoutStartSec=30s
+Restart=always
+TimeoutStopSec=10s
+User=grafana
+Group=grafana
+
+Environment=GRAFANA_IMAGE=grafana/grafana:6.2.4
+# Kind-a hack, since we need to have same user id in the container as outside
+# due to volumes ownership
+Environment=ID={{ grafana_user_id }}
+EnvironmentFile=/etc/grafana/env
+
+ExecStartPre=-/usr/bin/podman rm "grafana"
+
+ExecStart=/usr/bin/podman run \
+    --name "grafana" \
+    --user $ID \
+    --env-file /etc/grafana/env \
+    -p 3000:3000 \
+    -v /var/lib/grafana:/var/lib/grafana:Z \
+    -v /etc/grafana/provisioning:/etc/grafana/provisioning:Z \
+    -v /etc/ssl/{{grafana_ssl_cert_name}}:/etc/ssl/grafana.crt:Z \
+    -v /etc/ssl/{{grafana_ssl_key_name}}:/etc/ssl/grafana.key:Z \
+    ${GRAFANA_IMAGE}
+
+ExecReload=-/usr/bin/podman stop "grafana"
+ExecReload=-/usr/bin/podman rm "grafana"
+
+ExecStop=/usr/bin/podman stop -t 10 "grafana"
+
+[Install]
+WantedBy=multi-user.target
+

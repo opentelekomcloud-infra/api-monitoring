@@ -1,0 +1,7 @@
+---
+# Playbook to prepare infrastructure for APImon components with Heat
+
+- name: Provision Heat stack
+  hosts: localhost
+  roles:
+    - role: infra_heat

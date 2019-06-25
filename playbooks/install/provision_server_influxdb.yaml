@@ -1,0 +1,85 @@
+---
+# This playbook creates Single LoadBalancer and configures
+# Grafana(:3000) and InfluxDB(:8086) on it with a single FIP
+
+# TODO(gtema) make subnet name a proper var
+- name: Create ELB
+  hosts: os_infra
+  tasks:
+    - name: Find subnet
+      os_subnets_facts:
+        name: "{{ ( prefix + 'default-subnet') }}"
+      register: subnets
+
+    - set_fact:
+        subnet_id: "{{ subnets.ansible_facts.openstack_subnets[0].id }}"
+    
+    - name: Create LB
+      otc_loadbalancer:
+        name: apimon_lb
+        state: present
+        vip_subnet: "{{ subnet_id }}"
+        auto_public_ip: true
+      register: apimon_lb
+
+    - name: Create Influx Listener
+      otc_listener:
+        name: lsnr_influxdb
+        loadbalancer: "{{ apimon_lb.id }}"
+        protocol: TCP
+        protocol_port: 8086
+      register: influx_listener
+
+    - name: Create Grafana listener
+      otc_listener:
+        name: lsnr_grafana
+        loadbalancer: "{{ apimon_lb.id }}"
+        protocol: TCP
+        protocol_port: 3000
+      register: grafana_listener
+
+    - name: Create InfluxDB pool
+      otc_pool:
+        name: pool_influx
+        listener: "{{ influx_listener.id }}"
+        description: InfluxDB pool
+        protocol: TCP
+        lb_algorithm: SOURCE_IP
+        session_persistence:
+          type: SOURCE_IP
+      register: influx_pool    
+    
+    - name: Create Grafana pool
+      otc_pool:
+        name: pool_grafana
+        listener: "{{ grafana_listener.id }}"
+        description: Grafana pool
+        protocol: TCP
+        lb_algorithm: SOURCE_IP
+        session_persistence:
+          type: SOURCE_IP
+      register: grafana_pool
+
+    - name: Find InfluxDB data
+      os_server_facts:
+        server: "{{ influxdb_fqdn }}"
+      register: influx_server    
+  
+    - name: Find Grafana data
+      os_server_facts:
+        server: "{{ grafana_fqdn }}"
+      register: grafana_server
+
+    - name: Register InfluxDB in the LB
+      otc_member:
+        pool: "{{ influx_pool.id }}"
+        address: "{{ influx_server.ansible_facts.openstack_servers[0].private_v4 }}"
+        subnet_id: "{{ subnet_id }}"
+        protocol_port: 8086
+    
+    - name: Register Grafana in the LB
+      otc_member:
+        pool: "{{ grafana_pool.id }}"
+        address: "{{ grafana_server.ansible_facts.openstack_servers[0].private_v4 }}"
+        subnet_id: "{{ subnet_id }}"
+        protocol_port: 3000

@@ -1,0 +1,12 @@
+---
+# Inventory variables for grafana hosts
+# Optional (defaulted to 6.2.4 in role grafana)
+grafana_image_tag: "6.2.4"
+grafana_ssl_cert_name: grafana.pem
+grafana_ssl_key_name: grafana.key
+grafana_ssl_cert_content: "{{ apimon_ssl_cert_content }}"
+grafana_ssl_key_content: "{{ apimon_ssl_key_content }}"
+
+grafana_security_admin_password: GrafanaAdmin
+grafana_users_allow_sign_up: false
+

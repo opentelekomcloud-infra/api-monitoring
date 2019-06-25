@@ -1,0 +1,67 @@
+---
+heat_template_version: 2016-04-08
+
+description:
+  Security groups for APImon components
+
+parameters:
+
+resources:
+
+  bastion-secgrp:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      description: Security group for Bastion Server in VPC
+      rules:
+        - {"direction": "ingress", "remote_mode": "remote_group_id"}
+        - {"protocol": "icmp", "direction": "ingress"}
+        - {"protocol": "tcp", "direction": "ingress", "port_range_min": 22,
+           "port_range_max": 22}
+
+  common-secgrp:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      description: Common security group for Servers in VPC
+      rules:
+        - {"direction": "ingress", "remote_mode": "remote_group_id"}
+        - {"protocol": "icmp", "direction": "ingress"}
+        - {"protocol": "tcp", "direction": "ingress",
+           "remote_mode": "remote_group_id",
+           "remote_group_id": {get_resource: bastion-secgrp},
+           "port_range_min": 22, "port_range_max": 22}
+
+  influxdb-secgrp:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      description: Common security group for Servers in VPC
+      rules:
+        - {"direction": "ingress", "remote_mode": "remote_group_id"}
+        - {"protocol": "tcp", "direction": "ingress",
+           "remote_mode": "remote_group_id",
+           "remote_group_id": {get_resource: common-secgrp},
+           "port_range_min": 8086, "port_range_max": 8086}
+
+  grafana-secgrp:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      description: Common security group for Servers in VPC
+      rules:
+        - {"direction": "ingress", "remote_mode": "remote_group_id"}
+        - {"protocol": "tcp", "direction": "ingress",
+           "remote_mode": "remote_group_id",
+           "remote_group_id": {get_resource: common-secgrp},
+           "port_range_min": 3000, "port_range_max": 3000}
+
+outputs:
+  bastion-secgrp:
+    description: Bastion security group
+    value: { get_resource: bastion-secgrp }
+  common-secgrp:
+    description: Common security group
+    value: { get_resource: common-secgrp }
+  influxdb-secgrp:
+    description: Common security group
+    value: { get_resource: influxdb-secgrp }
+  grafana-secgrp:
+    description: Common security group
+    value: { get_resource: grafana-secgrp }

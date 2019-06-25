@@ -1,0 +1,60 @@
+---
+# tasks file for infra_xxx
+
+- when: executor_host_state != 'absent'
+  block:
+
+    - name: Create server {{ executor_host_server_name }}
+      os_server:
+        state: "{{ executor_host_state }}"
+        name: "{{ executor_host_server_name }}"
+        image: "{{ executor_host_image }}"
+        flavor: "{{ executor_host_flavor }}"
+        key_name: "{{ executor_host_key_name }}"
+        boot_from_volume: true
+        auto_ip: "{{ executor_host_auto_ip }}"
+        meta: "{{ executor_host_metadata }}"
+        availability_zone: "{{ executor_host_availability_zone }}"
+        security_groups: "{{ executor_host_security_groups }}"
+        nics: "{{ executor_host_network }}"
+        volume_size: "{{ executor_host_root_volume_size }}"
+        userdata: |
+          #cloud-config
+          fqdn: {{ executor_host_server_fqdn }}
+          packages:
+          growpart:
+          mode: auto
+          devices: ['/']
+          ignore_growroot_disabled: false
+      register: server
+    
+    - name: Create Data Volume {{ executor_host_data_volume_name }}
+      os_volume:
+        state: "{{ executor_host_state }}"
+        name: "{{ executor_host_data_volume_name }}"
+        size: "{{ executor_host_data_volume_size }}"
+        volume_type: "{{ executor_host_data_volume_type }}"
+        availability_zone: "{{ executor_host_availability_zone }}"
+        metadata: "{{ executor_host_data_volume_metadata }}"
+      when: executor_host_data_volume_size is defined
+      register: data_volume
+    
+    - name: Attach Data Volume {{ executor_host_data_volume_name }}
+      os_server_volume:
+        state: present
+        server: "{{ server.id }}"
+        volume: "{{ data_volume.id }}"
+      when: data_volume.id is defined
+
+- when: executor_host_state == 'absent'
+  block:
+
+    - name: Delete host
+      os_server:
+        state: absent
+        name: "{{ executor_host_server_name }}"
+
+    - name: Delete volume
+      os_volume:
+        state: absent
+        name: "{{ executor_host_data_volume_name }}"

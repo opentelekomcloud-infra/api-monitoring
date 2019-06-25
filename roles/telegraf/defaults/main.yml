@@ -1,2 +1,5 @@
 ---
 # defaults file for telegraf
+telegraf_systemd_service_name: "telegraf-service.service"
+telegraf_systemd_unit_path: "{{ '/etc/systemd/system/' + telegraf_systemd_service_name }}"
+telegraf_image_tag: 1.11.0

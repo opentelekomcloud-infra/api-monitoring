@@ -1,0 +1,92 @@
+---
+# tasks file for roles/grafana
+
+- name: Install podman
+  become: true
+  package:
+    name: podman
+    state: present
+
+- name: Create Grafana group
+  become: true
+  group:
+    name: grafana
+    state: present
+
+- name: Create Grafana user
+  become: true
+  user:
+    name: grafana
+    group: grafana
+  register:
+    grafana_user
+
+# We need to save grafana user uid, since it is referred
+# in the systemd unit file.
+- set_fact:
+    grafana_user_id: "{{ grafana_user.uid }}"
+
+- name: Create required directories
+  become: true
+  file:
+    path: "{{ item }}"
+    state: directory
+    recurse: yes
+    owner: grafana
+    group: grafana
+  loop:
+    - /etc/grafana
+    - /etc/grafana/provisioning
+    - /var/lib/grafana
+
+- name: /var/lib/grafana privs
+  become: true
+  file:
+    path: /var/lib/grafana
+    mode: 0775
+
+- name: Write Grafana config env file
+  template:
+    src: env
+    dest: /etc/grafana/env
+
+    # - name: Write Grafana custom config file
+    #   template:
+    #     src: custom.ini
+    #     dest: /etc/grafana/custom.ini
+
+- name: Write SSL Cert
+  become: true
+  copy:
+    content: "{{ item.content }}"
+    dest: "{{ ('/etc/ssl/' + item.name) }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - {content: "{{grafana_ssl_cert_content}}", 
+       name: "{{grafana_ssl_cert_name}}",
+       mode: "0644"}
+    - {content: "{{grafana_ssl_key_content}}", 
+       name: "{{grafana_ssl_key_name}}",
+       mode: "0600"}
+
+- name: Write Grafana Systemd unit file
+  become: true
+  template:
+    src: grafana-service.service
+    dest: "{{ grafana_systemd_unit_path }}"
+
+- name: Enable Grafana Systemd service
+  become: true
+  systemd:
+    name: "{{ grafana_systemd_service_name }}"
+    enabled: true
+    state: "started"
+    daemon_reload: true
+
+- name: Enable Firewalld port 3000
+  become: true
+  firewalld:
+    port: 3000/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes

@@ -1,0 +1,24 @@
+---
+# Inventory for executors
+
+clouds_yaml_content: |
+  metrics:
+   statsd:
+     host: telegraf
+     port: 8125
+   influxdb:
+     host: telegraf
+     port: 8186
+     username: foobar
+     password: barfoo
+     measurement: openstack_api
+  clouds:
+    otc:
+      auth:
+        auth_url: https://iam.eu-de.otc.t-systems.com:443/v3
+        project_name: fake
+        user_domain_name: fake
+        username: fake
+        password: fake
+      interface: public
+      identity_api_version: 3

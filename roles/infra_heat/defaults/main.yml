@@ -1,0 +1,24 @@
+---
+# defaults file for infra_heat
+
+stack_prefix: apimon-
+stack_name: apimon_stack
+domain_name: apimon.otc-dev.tsi-service.com
+image: "Standard_Fedora_29_latest"
+ssh_user: "linux"
+bastion_image: "{{ image }}"
+bastion_flavor: "s2.medium.2"
+bastion_ssh_user: "{{ ssh_user }} "
+executor_image: "{{ image }}"
+executor_flavor: "s2.xlarge.2"
+executor_ssh_user: "{{ ssh_user }}"
+influxdb_image: "{{ image }}"
+influxdb_flavor: "s2.xlarge.2"
+influxdb_ssh_user: "{{ ssh_user }}"
+influxdb_root_volume_size: 12
+influxdb_storage_volume_size: 500
+grafana_image: "{{ image }}"
+grafana_flavor: "s2.xlarge.1"
+grafana_ssh_user: "{{ ssh_user }}"
+
+stack_update_required: true

@@ -1,0 +1,52 @@
+---
+# This playbook is intended to create read-only user for grafana on to apimon db and provision a corresponding datasource in the Grafana.
+
+- name: Prompt
+  hosts: all
+  vars_prompt:
+    - name: influx_host
+      prompt: "Which influxdb (from inventory) should Grafana be connected to"
+      default: influxdb1
+      private: no
+  tasks:
+    - add_host:
+        name: "{{ item }}"
+        groups: target_influx_hosts
+      with_items: "{{ influx_host.split(',') }}"
+
+- name: Create grafana read-only user on influx
+  hosts: target_influx_hosts
+  tasks:
+    - name: Create grafana user
+      influxdb_user:
+        user_name: "{{ influxdb_grafana_user_name }}"
+        user_password: "{{ influxdb_grafana_user_password }}"
+        grants:
+          - database: "{{ influxdb_apimon_db_name }}"
+            privilege: 'READ'
+        admin: no
+        login_username: "{{ influxdb_admin_user_name }}"
+        login_password: "{{ influxdb_admin_user_password }}"
+        hostname: "{{ influxdb_hostname }}"
+        ssl: yes
+        validate_certs: "{{ apimon_ssl_validate_cert }}"
+        
+- name: Add datasource to grafana
+  hosts: grafana
+  tasks:
+    - name: Add datasource
+      grafana_datasource:
+        name: "{{ (item + '-datasource') }}"
+        grafana_url: "{{ ('https://' + grafana_public_ip + ':3000') }}"
+        grafana_user: "admin"
+        grafana_password: "{{ grafana_security_admin_password }}"
+        org_id: "1"
+        ds_type: "influxdb"
+        ds_url: "{{ ('https://' + hostvars[item].influxdb_public_ip + ':8086') }}"
+        database: "{{ hostvars[item].influxdb_apimon_db_name }}"
+        user: "{{ hostvars[item].influxdb_grafana_user_name }}"
+        password: "{{ hostvars[item].influxdb_grafana_user_password }}"
+        tls_skip_verify: "{{ not apimon_ssl_validate_cert|bool }}"
+        validate_certs: "{{ apimon_ssl_validate_cert }}"
+      with_items: "{{ groups['target_influx_hosts'] }}"
+

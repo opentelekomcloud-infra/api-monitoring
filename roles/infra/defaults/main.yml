@@ -1,0 +1,50 @@
+---
+# defaults file for roles/infra
+domain_name: test.com
+image: "Standard_Fedora_29_latest"
+availability_zone: "eu-de-03"
+
+host_state: "present"
+host_availability_zone: "{{ availability_zone }}"
+
+influxdb_state: "present"
+influxdb_host_image: "{{ image }}"
+influxdb_host_flavor: "s2.xlarge.2"
+influxdb_host_name: "{{ ('influx.' + domain_name) }}"
+influxdb_host_availability_zone: "{{ availability_zone }}"
+influxdb_host_root_volume_size: 12
+influxdb_host_data_volume_name: "influxdb_data"
+influxdb_host_data_volume_size: 50
+influxdb_host_data_volume_type: "SSD"
+# Auto attach FIP
+influxdb_host_auto_ip: false
+
+# Infra defaults
+grafana_state: "present"
+grafana_host_image: "{{ image }}"
+grafana_host_flavor: "s2.xlarge.2"
+grafana_host_name: "{{ grafana_host_fqdn }}"
+grafana_host_fqdn: "{{ ('grafana.' + domain_name) }}" 
+grafana_host_availability_zone: "{{ availability_zone }}"
+grafana_host_metadata: 
+  host-type: grafana
+grafana_host_root_volume_size: 12
+grafana_host_data_volume_name: "grafana_data"
+grafana_host_data_volume_size: 20
+grafana_host_data_volume_metadata:
+  host-type: grafana
+grafana_host_data_volume_type: "SSD"
+# Auto attach FIP
+grafana_host_auto_ip: false
+
+executor_state: "{{ image }}"
+executor_host_image: "Standard_Fedora_29_latest"
+executor_host_flavor: "s2.xlarge.2"
+executor_host_name: "{{ ('executor.' + domain_name) }}"
+executor_host_availability_zone: "{{ availability_zone }}"
+executor_host_root_volume_size: 12
+executor_host_data_volume_name: "executor_data"
+executor_host_data_volume_size: 100
+executor_host_data_volume_type: "SSD"
+# Auto attach FIP
+executor_host_auto_ip: false

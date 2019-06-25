@@ -1,0 +1,54 @@
+---
+# Destroy infrastructure with Ansible
+
+- name: Destroy infrastructure
+  hosts: os_infra
+  tasks:
+    - name: Remove LB
+      otc_loadbalancer:
+        name: "{{ loadbalancer_name }}"
+        state: absent
+
+    - name: Destroy hosts
+      include_role:
+        name: "{{ item }}"
+        tasks_from: "provision_openstack.yaml"
+      vars:
+        host_state: absent
+        grafana_host_state: absent
+        influxdb_host_state: absent
+        executor_host_state: absent
+      loop:
+        - executor
+        - grafana
+        - influxdb
+
+    - name: Destroy bastion host
+      include_role:
+        name: opentelekomcloud.bastion
+      vars:
+        state: absent
+
+    - name: Remove SecurityGroups
+      include_role:
+        name: opentelekomcloud.security_group
+      vars:
+        state: absent
+        securitygroup_name: "{{ item }}"
+      loop:
+        - "{{ grafana_sg_name }}"
+        - "{{ influxdb_sg_name }}"
+        - "{{ executor_sg_name }}"
+        - "{{ common_sg_name }}"
+        - "{{ bastion_sg_name }}"
+
+          #- hosts: os_infra
+          #  strategy: free
+          #  tasks:
+    - name: Remove VPC
+      include_role:
+        name: opentelekomcloud.vpc
+      vars:
+        state: absent
+        network_name: "{{ net_name }}"
+

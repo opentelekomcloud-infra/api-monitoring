@@ -1,20 +1,36 @@
 ---
 # Playbook to install APImon components
 
-- name: Provision telegraf instance
-  hosts: all
+# This step is required to be executed first, since it is mostly the case
+# that TCP port forwarding is disabled on the Bastion instance. The role
+# will enable that and we will be able to access all other instances
+- name: Apply common role to all Bastion instance
+  hosts: bastion
   become: true
-  # roles:
-  #   - opentelekomcloud.server_common
+  roles:
+    - {role: opentelekomcloud.server_common, enable_ssh_tcp_forwarding: True} 
+
+- name: Apply common role to remaining hosts
+  hosts: [executor, telegraf, influxdb, grafana]
+  strategy: free
+  become: true
+  roles:
+    - opentelekomcloud.server_common
   tasks:
-    - name: Install docker
+    - name: Install podman
       package:
         state: present
-        name: docker
+        name: podman
 
-    - name: docker service
-      become: true
-      systemd:
-        name: docker
-        enabled: yes
-        state: started
+- import_playbook: mount_storage.yaml
+#- name: Provision InfluxDB
+#  hosts: influxdb
+#  become: true
+#  tasks:
+#    - name: Install InfluxDB
+#      include_role: 
+#        name: influxdb
+  
+- import_playbook: install_influxdb.yaml
+- import_playbook: install_grafana.yaml
+- import_playbook: install_executor.yaml

@@ -1,0 +1,7 @@
+---
+- name: Resource Manager
+  include_tasks: "manage_{{ item }}.yaml"
+  loop:
+    - grafana
+    - influxdb
+    - executor

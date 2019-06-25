@@ -1,0 +1,56 @@
+---
+# tasks file for roles/executor
+
+- name: install buildah
+  become: true
+  package:
+    name: buildah
+    state: present
+
+- name: Create executor group
+  become: yes
+  group:
+    name: executor
+    state: present
+
+- name: Create executor user
+  become: true
+  user:
+    name: executor
+    group: executor
+    state: present
+
+- name: Write Executor Systemd unit file
+  become: true
+  template:
+    src: executor-service.service
+    dest: "{{ executor_systemd_unit_path }}"
+
+- name: Create ~executor/.config/openstack dir
+  become: true
+  become_user: executor
+  file:
+    dest: "~executor/.config/openstack/"
+    state: directory
+    recurse: true
+
+- name: Write clouds.yaml
+  become: true
+  become_user: executor
+  copy:
+    content: "{{ clouds_yaml_content }}"
+    dest: "~executor/.config/openstack/clouds.yaml"
+
+- name: checkout apimon
+  become: true
+  become_user: executor
+  git: 
+    repo: "{{ apimon_repo }}"
+    dest: "{{ executor_apimon_repo_dest }}"
+
+    # - set_fact:
+
+    # - name: build executor image
+    #   become: true
+    #   become_user: executor
+    #   command: "buildah bud -f {{ executor_apimon_repo_dest}}/executor/Dockerfile -t executor"

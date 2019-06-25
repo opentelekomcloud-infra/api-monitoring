@@ -1,0 +1,27 @@
+[Unit]
+Description=Influx Podman container
+Wants=syslog.service
+
+[Service]
+Type=simple
+Restart=always
+TimeoutSec=30s
+User=executor
+Group=executor
+
+# ExecStartPre=-/usr/bin/buildah bud %h/apimon/executor/Dockerfile -t executor ~%h/apimon/executor
+ExecStartPre=-/usr/bin/podman rm executor
+
+ExecStart=/bin/sh -c "/usr/bin/podman run \
+  --add-host=telegraf:$(ifconfig $(ip route | awk '/default/ { print $5 }') | grep 'inet ' | awk '{print $2}') \
+  --name executor \
+  -v ~executor/.config/openstack:/etc/openstack:ro \
+  executor"
+
+ExecReload=-/usr/bin/podman stop executor
+ExecReload=-/usr/bin/podman rm executor
+
+ExecStop=/usr/bin/podman stop -t 10 executor
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,111 @@
+---
+# This playbook creates Single LoadBalancer and configures
+# Grafana(:3000) and InfluxDB(:8086) on it with a single FIP
+
+# TODO(gtema) make subnet name a proper var
+- name: Create ELB
+  hosts: os_infra
+  tasks:
+    - name: Find subnet
+      os_subnets_facts:
+        name: "{{ ( prefix + 'default-subnet') }}"
+      register: subnets
+
+    - set_fact:
+        subnet_id: "{{ subnets.ansible_facts.openstack_subnets[0].id }}"
+    
+    - name: Create LB
+      otc_loadbalancer:
+        name: apimon_lb
+        state: present
+        vip_subnet: "{{ subnet_id }}"
+        auto_public_ip: true
+      register: apimon_lb
+
+    - name: Create Listeners
+      otc_listener:
+        name: "{{ item.name }}"
+        loadbalancer: "{{ apimon_lb.id }}"
+        protocol: "{{ item.protocol }}"
+        protocol_port: "{{ item.port }}"
+      register: listener_results
+      loop:
+        - {name: "lsnr_influxdb", protocol: "TCP", port: 8086}
+        - {name: "lsnr_grafana", protocol: "TCP", port: 3000}
+          # async: 60
+          #       poll: 1
+
+          #     - name: Wait for creation to finish
+          #       async_status:
+          #         jid: "{{ item.ansible_job_id }}"
+          #       register: _jobs
+          #       until: _jobs.finished
+          #       delay: 1
+          #       retries: 10  # Retry up to 10 times. Adjust as needed.
+          #       with_items: "{{ listener_results.results }}"
+          # 
+          #     - debug:
+          #         var: listener_results
+
+    - set_fact:
+        listeners: "{{ listeners| default({}) | combine({ item.item.name: item.id }) }}"
+      with_items: "{{ listener_results.results }}"
+
+    - name: Create pools
+      otc_pool:
+        name: "{{ item.name }}"
+        listener: "{{ item.listener }}"
+        description: "{{ item.descr }}"
+        protocol: "{{ item.protocol }}"
+        lb_algorithm: "{{ item.algo }}"
+        session_persistence:
+          type: SOURCE_IP
+      loop:
+        - {name: "pool_influx", listener: "{{ listeners.lsnr_influxdb }}",
+           descr: "InfluxDB Pool", protocol: "TCP", algo: "SOURCE_IP"}
+        - {name: "pool_grafana", listener: "{{ listeners.lsnr_grafana }}",
+           descr: "Grafana Pool", protocol: "TCP", algo: "SOURCE_IP"}
+           #      async: 60
+           #      poll: 1
+      register:
+        pool_results
+
+        #     - name: Wait for creation to finish
+        #       async_status:
+        #         jid: "{{ item.ansible_job_id }}"
+        #       register: _jobs
+        #       until: _jobs.finished
+        #       delay: 1  # Check every 5 seconds. Adjust as you like.
+        #       retries: 10  # Retry up to 10 times. Adjust as needed.
+        #       with_items: "{{ pool_results.results }}"
+        # 
+        #     - debug:
+        #         var: pools
+
+    - set_fact:
+        pools: "{{ pools| default({}) | combine({ item.item.name: item.id }) }}"
+      with_items: "{{ pool_results.results }}"
+
+    - name: Find InfluxDB data
+      os_server_facts:
+        server: "{{ influxdb_host_server_fqdn }}"
+      register: influx_server    
+  
+    - name: Find Grafana data
+      os_server_facts:
+        server: "{{ grafana_host_server_fqdn }}"
+      register: grafana_server
+  
+    - name: Register InfluxDB in the LB
+      otc_member:
+        pool: "{{ pools.pool_influx }}"
+        address: "{{ influx_server.ansible_facts.openstack_servers[0].private_v4 }}"
+        subnet_id: "{{ subnet_id }}"
+        protocol_port: 8086
+    
+    - name: Register Grafana in the LB
+      otc_member:
+        pool: "{{ pools.pool_grafana }}"
+        address: "{{ grafana_server.ansible_facts.openstack_servers[0].private_v4 }}"
+        subnet_id: "{{ subnet_id }}"
+        protocol_port: 3000

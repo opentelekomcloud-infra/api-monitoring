@@ -1,0 +1,46 @@
+all:
+  hosts:
+    bastion:
+      ansible_host: __ip__
+      ansible_user: linux
+      ansible_ssh_private_key: ~/.ssh/id.rsa
+    executor1:
+      ansible_host: 192.168.110.60
+      ansible_user: linux
+      # Telegraf is running on the same instance
+      telegraf_ip: "{{ ansible_host }}"
+    influxdb1:
+      ansible_host: 192.168.110.141
+      ansible_user: linux
+      influxdb_admin_user_name: admin
+      # Generate Admin pass, i.e. with "< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-32};echo;"
+      dinfluxdb_admin_user_password: fake
+      influxdb_grafana_user_name: grafana
+      influxdb_grafana_user_password: fake
+      influxdb_telegraf_user_name: telegraf
+      influxdb_telegraf_user_password: fake
+      influxdb_public_ip: __PUB_IP__
+    grafana1:
+      ansible_host: 192.168.110.68__
+      ansible_user: linux
+      grafana_public_ip: __PUB_IP__
+  vars:
+    ansible_python_interpreter: "/usr/bin/env python3"
+  children:
+    gatewayed:
+      hosts:
+        executor1:
+        influxdb1:
+        grafana1:
+    telegraf:
+      hosts:
+        executor1:
+    executor:
+      hosts:
+        executor1:
+    influxdb:
+      hosts:
+        influxdb1:
+    grafana:
+      hosts:
+        grafana1:

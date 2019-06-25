@@ -1,0 +1,22 @@
+---
+
+- name: test
+  hosts: [executor, grafana, telegraf]
+  tasks:
+    - set_fact:
+        device_map:
+          grafana:
+            device: /dev/vdb
+            mount_point: /var/lib/grafana
+          influxdb:
+            device: /dev/vdb
+            mount_point: /var/lib/influxdb
+          executor:
+            device: /dev/vdb
+            mount_point: /var/lib/executor
+    - name: msg
+      debug:
+        msg: "hello from {{ group_names }}"
+      loop:
+        - {name: grafana}
+        - {name: influxdb}

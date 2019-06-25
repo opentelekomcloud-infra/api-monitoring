@@ -1,29 +1,55 @@
 ---
-# tasks file for telegraf
-  - name: Prepare telegraf config dir
-    become: true
-    file:
-      path: /etc/telegraf
-      state: directory
-      recurse: yes
+# tasks file for roles/executor
 
-  - name: Provision telegraf config
-    become: true
-    template:
-      src: telegraf.conf
-      dest: /etc/telegraf/telegraf.conf
 
-  - name: Start telegraf container
-    become: true
-    docker_container:
-      name: telegraf
-      image: telegraf
-      state: started
-      restart: true
-      pull: true
-      ports:
-        - "8125:8125/udp"
-        - "9273:9273"
-        - "8186:8186"
-      volumes:
-        - /etc/telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro,Z
+- name: Write telegraf systemd unit file
+  become: true
+  template:
+    dest: "{{ telegraf_systemd_unit_path }}"
+    src: telegraf-service.service
+
+- name: Make sure Telegraf Conf dir exists
+  become: true
+  file:
+    path: "/etc/telegraf"
+    state: directory
+    recurse: yes
+
+- name: Write SSL Cert
+  become: true
+  copy:
+    content: "{{ item.content }}"
+    dest: "{{ ( '/etc/telegraf/' + item.name ) }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - {content: "{{telegraf_ssl_cert_content}}",
+       name: "{{telegraf_ssl_cert_name}}",
+       mode: "0644"}
+    - {content: "{{telegraf_ssl_key_content}}",
+       name: "{{telegraf_ssl_key_name}}",
+       mode: "0600"}
+    - {content: "{{telegraf_ssl_ca_cert_content}}",
+       name: "{{telegraf_ssl_ca_cert_name}}",
+       mode: "0644"}
+
+- name: Write Telegraf Conf
+  become: true
+  template:
+    src: "telegraf.conf"
+    dest: "/etc/telegraf/telegraf.conf"
+
+- name: Write Telegraf Env file
+  become: true
+  template:
+    src: "env"
+    dest: "/etc/telegraf/env"
+
+- name: Start telegraf
+  become: true
+  systemd:
+    name: "{{ telegraf_systemd_service_name }}"
+    enabled: true
+    state: "started"
+    daemon_reload: true
+
+

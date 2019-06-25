@@ -1,0 +1,19 @@
+---
+# Manage executor host
+- name: Manage executor host
+  include_tasks: openstack.yaml
+  vars:
+    host_server_name: "{{ executor_host_name }}"
+    host_server_fqdn: "{{ executor_host_fqdn }}"
+    host_image: "{{ executor_host_image }}"
+    host_flavor: "{{ executor_host_flavor }}"
+    host_key_name: "{{ executor_host_key_name }}"
+    host_auto_ip: "{{ executor_host_auto_ip }}"
+    host_metadata: "{{ executor_host_metadata }}"
+    host_security_groups: "{{ executor_host_security_groups }}"
+    host_network: "{{ executor_host_network }}"
+    host_data_volume_name: "{{ executor_host_data_volume_name }}"
+    host_data_volume_size: "{{ executor_host_data_volume_size }}"
+    host_data_volume_metadata: "{{ executor_host_data_metadata }}"
+    host_data_volume_type: "{{ executor_host_data_volume_type }}"
+    host_root_volume_size: "{{ executor_host_root_volume_size }}"

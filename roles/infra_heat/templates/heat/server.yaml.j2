@@ -1,0 +1,162 @@
+---
+# A simple server stack
+
+heat_template_version: 2016-04-08
+
+description:
+  Server template
+
+parameters:
+
+  # external_network:
+  #   type: string
+  #   description: >
+  #     The external network that provides floating IP addresses for the nodes
+  #   default: admin_external_net
+  #   constraints:
+  #   - custom_constraint: neutron.network
+
+  network:
+    description: >
+      The name or ID of the internal network
+    type: string
+    constraints:
+    - custom_constraint: neutron.network
+
+  subnet:
+    description: >
+      The name or ID of the internal subnet
+    type: string
+    constraints:
+    - custom_constraint: neutron.subnet
+
+  security_groups:
+    description: List of security groups
+    type: comma_delimited_list
+
+  hostname:
+    description: The hostname
+    type: string
+    # default: bastion
+
+  domain_name:
+    type: string
+    description: >
+      Domain name for instances
+    # default: test.com
+
+  flavor:
+    type: string
+    description: >
+      Flavor for the server
+    # default: s2.large.1
+    constraints:
+      - custom_constraint: nova.flavor
+
+  image:
+    type: string
+    description: >
+      Image for the server
+    # default: Standard_Fedora_29_latest
+    constraints:
+      - custom_constraint: glance.image
+
+  keypair_name:
+    type: string
+    description: >
+      KeyPair for the server
+    constraints:
+      - custom_constraint: nova.keypair
+
+  root_volume_size:
+    type: number
+    description: >
+      Size of the root partition for server
+    default: 10
+    constraints:
+
+  metadata:
+    type: json
+    description: server metadata
+    default: {}
+
+  data_storage_mapping:
+    type: json
+    description: additional storage to be used in block_device_mapping
+    default: {}
+
+resources:
+
+  server_init:
+    type: OS::Heat::MultipartMime
+    properties:
+      parts:
+      - config: {get_resource: set_hostname}
+
+  set_hostname:
+    type: OS::Heat::CloudConfig
+    properties:
+      cloud_config:
+        hostname: { get_param: hostname }
+        fqdn:
+          str_replace:
+            template: "HOSTNAME.DOMAIN"
+            params:
+              HOSTNAME: { get_param: hostname }
+              DOMAIN: { get_param: domain_name }
+
+  server:
+    type: OS::Nova::Server
+    properties:
+      name:
+        str_replace:
+          template: "HOSTNAME.DOMAIN"
+          params:
+            HOSTNAME: { get_param: hostname }
+            DOMAIN: { get_param: domain_name }
+      flavor: { get_param: flavor }
+      key_name: { get_param: keypair_name }
+      networks:
+        - port: { get_resource: port }
+      block_device_mapping_v2:
+        - {"image": { get_param: image }, "volume_size": { get_param: root_volume_size }, "delete_on_termination": true}
+        - { get_param: data_storage_mapping }
+      metadata: { get_param: metadata }
+      user_data_format: SOFTWARE_CONFIG
+      user_data: {get_resource: server_init}
+
+  # Port is created extra to give possibility to assign Floating IP to the server
+  port:
+    type: OS::Neutron::Port
+    properties:
+      fixed_ips:
+      - subnet_id: {get_param: subnet}
+      network_id: {get_param: network}
+      security_groups: {get_param: security_groups}
+
+outputs:
+  OS::stack_id:
+    value: { get_resource: server }
+  id:
+    description: ID of the server
+    value: { get_resource: server }
+  name:
+    description: instance name
+    value: { get_attr: [server, name ] }
+  hostname:
+    description: Hostname
+    value: { get_param: hostname }
+  fqdn:
+    description: FQDN of the instance
+    value: { get_attr: [server, name ] }
+  private_ip:
+    description: Private ip of the instance
+    value:
+      get_attr:
+        - server
+        - networks
+        - { get_param: network }
+        - 0
+  port:
+    value: { get_resource: port }
+

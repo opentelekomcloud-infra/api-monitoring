@@ -1,0 +1,331 @@
+---
+# Heat stack with VPC, Bastion, Executor, Influx, Grafana
+
+heat_template_version: 2016-04-08
+
+description:
+  Template for managing APIMon infrastructure
+parameters:
+
+  prefix:
+    type: string
+    description: Prefix for naming resources
+    default: apimon-
+
+  # Connectivity
+  external_network:
+    type: string
+    description: >
+      The external network that provides floating IP addresses for the nodes
+    default: admin_external_net
+    constraints:
+    - custom_constraint: neutron.network
+
+  subnet_cidr:
+    type: string
+    description: CIDR for the default subnetwork in the VPC
+    default: 192.168.110.0/24
+
+  dns_nameservers:
+    type: comma_delimited_list
+    description: Default DNS servers in the VPC
+    default: ['100.125.4.25', '8.8.8.8']
+
+  domain_name:
+    type: string
+    description: >
+      Domain name for instances
+    default: apimon.tsi-dev.otc-service.com
+
+  bastion_flavor:
+    type: string
+    description: >
+      Flavor for the bastion
+    default: s2.medium.2
+    constraints:
+      - custom_constraint: nova.flavor
+
+  bastion_image:
+    type: string
+    description: >
+      Image for the bastion server
+    default: Standard_Fedora_29_latest
+    constraints:
+      - custom_constraint: glance.image
+
+  bastion_keypair_name:
+    type: string
+    description: >
+      KeyPair for the bastion server
+    hidden: True
+    constraints:
+      - custom_constraint: nova.keypair
+
+  bastion_root_volume_size:
+    type: number
+    description: >
+      Size of the root partition for bastion server
+    default: 10
+    constraints:
+
+  bastion_ssh_user:
+    type: string
+    description: >
+      SSH user for the connection to the bastion
+    default: linux
+
+  executor_flavor:
+    type: string
+    description: >
+      Flavor for the executor
+    default: s2.medium.2
+    constraints:
+      - custom_constraint: nova.flavor
+
+  executor_image:
+    type: string
+    description: >
+      Image for the executor server
+    default: Standard_Fedora_29_latest
+    constraints:
+      - custom_constraint: glance.image
+
+  executor_keypair_name:
+    type: string
+    description: >
+      KeyPair for the executor server
+    hidden: True
+    constraints:
+      - custom_constraint: nova.keypair
+
+  executor_root_volume_size:
+    type: number
+    description: >
+      Size of the root partition for executor server
+    default: 10
+    constraints:
+
+  executor_ssh_user:
+    type: string
+    description: >
+      SSH user for the connection to the executor
+    default: linux
+
+  influxdb_flavor:
+    type: string
+    description: >
+      Flavor for the influxdb
+    default: s2.xlarge.2
+    constraints:
+      - custom_constraint: nova.flavor
+
+  influxdb_image:
+    type: string
+    description: >
+      Image for the influxdb server
+    default: Standard_Fedora_29_latest
+    constraints:
+      - custom_constraint: glance.image
+
+  influxdb_keypair_name:
+    type: string
+    description: >
+      KeyPair for the influxdb server
+    hidden: True
+    constraints:
+      - custom_constraint: nova.keypair
+
+  influxdb_root_volume_size:
+    type: number
+    description: >
+      Size of the root partition for influxdb server
+    default: 10
+    constraints:
+
+  influxdb_storage_volume_size:
+    type: number
+    description: >
+      Size of the data partition for influxdb server
+    default: 500
+    constraints:
+
+  influxdb_ssh_user:
+    type: string
+    description: >
+      SSH user for the connection to the influxdb
+    default: linux
+
+  grafana_flavor:
+    type: string
+    description: >
+      Flavor for the grafana
+    default: s2.xlarge.2
+    constraints:
+      - custom_constraint: nova.flavor
+
+  grafana_image:
+    type: string
+    description: >
+      Image for the grafana server
+    default: Standard_Fedora_29_latest
+    constraints:
+      - custom_constraint: glance.image
+
+  grafana_keypair_name:
+    type: string
+    description: >
+      KeyPair for the grafana server
+    hidden: True
+    constraints:
+      - custom_constraint: nova.keypair
+
+  grafana_root_volume_size:
+    type: number
+    description: >
+      Size of the root partition for grafana server
+    default: 10
+    constraints:
+
+  grafana_ssh_user:
+    type: string
+    description: >
+      SSH user for the connection to the grafana
+    default: linux
+
+#    config_repo:
+#     type: string
+#     description: git repo of the configuration (will be polled periodically)
+#     default: "https://github.com/opentelekomcloud-infra/ansible-zuul"
+# 
+#   common_role_name:
+#     type: string
+#     description: Galaxy role to be applied to each server
+#     default: opentelekomcloud.server_common
+
+resources:
+
+  vpc:
+    type: Heat::OTC::VPC
+    properties:
+      prefix: { get_param: prefix }
+      external_network: { get_param: external_network }
+      dns_nameservers: { get_param: dns_nameservers }
+      subnet_cidr: { get_param: subnet_cidr }
+
+  sg:
+    type: sec_grp.yaml
+
+  bastion:
+    type: Heat::OTC::Server
+    properties:
+      hostname: bastion
+      domain_name: { get_param: domain_name }
+      network: { get_attr: [vpc, network] }
+      subnet: { get_attr: [vpc, subnet] }
+      image: { get_param: bastion_image }
+      flavor: { get_param: bastion_flavor }
+      keypair_name: { get_param: bastion_keypair_name }
+      root_volume_size: { get_param: bastion_root_volume_size }
+      security_groups:
+        - { get_attr: [sg, bastion-secgrp] }
+      metadata:
+        groups:
+          - bastion
+          - { get_param: domain_name }
+        host-type: bastion
+        sub-host-type: bastion
+        ansible_user: { get_param: bastion_ssh_user }
+
+  bastion_floating_ip:
+    type: OS::Neutron::FloatingIP
+    depends_on: bastion
+    properties:
+      floating_network: { get_param: external_network }
+      port_id: { get_attr: [ bastion, port ] }
+
+  executor:
+    type: Heat::OTC::Server
+    properties:
+      hostname: executor
+      domain_name: { get_param: domain_name }
+      network: { get_attr: [vpc, network] }
+      subnet: { get_attr: [vpc, subnet] }
+      image: { get_param: executor_image }
+      flavor: { get_param: executor_flavor }
+      keypair_name: { get_param: executor_keypair_name }
+      root_volume_size: { get_param: executor_root_volume_size }
+      security_groups:
+        - { get_attr: [sg, executor-secgrp] }
+      metadata:
+        groups:
+          - executor
+          - { get_param: domain_name }
+        host-type: executor
+        sub-host-type: executor
+        ansible_user: { get_param: executor_ssh_user }
+  
+  influxdb_data_volume:
+    type: Heat::Cinder::Volume
+    properties:
+      size: { get_param: influxdb_storage_volume_size }
+      volume_type: "SSD"
+      availability_zone: "eu-de-03"
+
+  influxdb:
+    type: server.yaml
+    # Heat::OTC::Server
+    properties:
+      hostname: influxdb
+      domain_name: { get_param: domain_name }
+      network: { get_attr: [vpc, network] }
+      subnet: { get_attr: [vpc, subnet] }
+      image: { get_param: influxdb_image }
+      flavor: { get_param: influxdb_flavor }
+      keypair_name: { get_param: influxdb_keypair_name }
+      root_volume_size: { get_param: influxdb_root_volume_size }
+      security_groups:
+        - { get_attr: [sg, influxdb-secgrp] }
+      data_storage_mapping:
+        - {"volume_id": { get_resource: influxdb_data_volume }}
+      availability_zone: eu-de-03
+      metadata:
+        groups:
+          - influxdb
+          - { get_param: domain_name }
+        host-type: influxdb
+        sub-host-type: influxdb
+        ansible_user: { get_param: influxdb_ssh_user }
+
+  grafana:
+    type: server.yaml
+    # Heat::OTC::Server
+    properties:
+      hostname: grafana
+      domain_name: { get_param: domain_name }
+      network: { get_attr: [vpc, network] }
+      subnet: { get_attr: [vpc, subnet] }
+      image: { get_param: grafana_image }
+      flavor: { get_param: grafana_flavor }
+      keypair_name: { get_param: grafana_keypair_name }
+      root_volume_size: { get_param: grafana_root_volume_size }
+      security_groups:
+        - { get_attr: [sg, grafana-secgrp] }
+      metadata:
+        groups:
+          - grafana
+          - { get_param: domain_name }
+        host-type: grafana
+        sub-host-type: grafana
+        ansible_user: { get_param: grafana_ssh_user }
+
+outputs:
+   bastion:
+     description: Bastion information
+     value: { get_attr: [ bastion ] }
+   bastion_ip:
+     description: Bastion IP
+     value: { get_attr: [ bastion_floating_ip ] }
+   executor:
+     description: Executor Host information
+     value: { get_attr: [ executor ] }
+ 

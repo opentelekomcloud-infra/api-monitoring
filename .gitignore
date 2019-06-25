@@ -3,4 +3,4 @@ inv.log
 inventory/production
 __pycache__
 *.retry
-roles/gtema.*
+playbooks/install/credentials/*

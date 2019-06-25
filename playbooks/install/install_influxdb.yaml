@@ -1,0 +1,7 @@
+---
+# Playbook to install InfluxDB
+
+- name: Provision InfluxDB
+  hosts: influxdb
+  roles:
+    - influxdb

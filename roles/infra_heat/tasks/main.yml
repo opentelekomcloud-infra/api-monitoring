@@ -1,0 +1,80 @@
+---
+# tasks file for infra_heat
+
+- block:
+
+  - name: Check stack
+    os_stack_facts:
+      name: "{{ stack_name }}"
+    register: stack_output
+
+  - set_fact:
+      stack_update_required: False
+    when:
+      - force is not defined
+      - stack_output.stack
+      - stack_output.stack.status | default('') == 'COMPLETE'
+      - stack_output.stack.parameters.prefix | default('') == stack_prefix
+      - stack_output.stack.parameters.domain_name | default('') == domain_name
+        #      - (stack_output.stack.parameters.dns_nameservers | default('') | from_yaml) == dns_nameservers
+
+  - when: stack_update_required|bool
+    block:
+      - name: create HOT stack template prefix
+        register: stack_template_pre
+        tempfile:
+          state: directory
+          prefix: otc-apimon
+
+      - name: Create stack templates
+        include_tasks: generate_templates.yaml
+
+      - name: Create the Heat Stack
+        os_stack:
+          name: "{{ stack_name }}"
+          template: "{{ stack_template_path }}"
+          state: present
+          environment: ["{{ stack_env_template_path }}"]
+          timeout: 600
+          wait: true
+        register: stack_create_output
+
+      # NOTE: should be done separately, since "register" redefines variable
+      # even when not executed due to the condition
+      - set_fact:
+          stack_output: "{{stack_create_output}}"
+
+      - name: debug stack output
+        debug:
+          var: stack_output
+
+    always:
+      - name: CleanUp
+        include_tasks: cleanup.yaml
+
+  - name: restructure output
+    set_fact:
+      stack_data: "{{ stack_data | default([]) | combine( {item['output_key']: item['output_value']} ) }}"
+    with_items: "{{ stack_output.stack.outputs }}"
+
+  - name: debug stack output
+    debug:
+      var: stack_data
+
+  - name: add bastion to inventory
+    add_host:
+      name: "{{ stack_data.bastion.fqdn }}"
+      groups: bastion
+      ansible_host: "{{ stack_data.bastion_ip.floating_ip_address }}"
+      ansible_user: "{{ bastion_ssh_user }}"
+      ansible_ssh_private_key_file: "{{ ('~/.ssh/' + bastion_keypair_name + '.pem') }}"
+      ansible_python_interpreter: "{{ bastion_python | default(omit) }}"
+ 
+      #   - name: add proxy to inventory
+      #     add_host:
+      #       name: "{{ stack_data.proxy.fqdn }}"
+      #       groups: proxy
+      #       ansible_host: "{{ stack_data.proxy.private_ip }}"
+      #       ansible_user: "{{ proxy_ssh_user }}"
+      #       ansible_ssh_private_key_file: "{{ ('~/.ssh/' + proxy_keypair_name + '.pem') }}"
+      #       ansible_python_interpreter: "{{ proxy_python | default(omit) }}"

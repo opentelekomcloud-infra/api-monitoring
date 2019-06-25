@@ -1,0 +1,12 @@
+---
+- name: Provision InfluxDB Host
+  hosts: localhost
+  roles:
+    - role: infra_influxdb
+      vars:
+        name: "{{ influxdb_fqdn }}"
+        key_name: "{{ influxdb_key_pair }}"
+        server_fqdn: "{{ influxdb_fqdn }}"
+        security_groups: 
+          - apimon_stack-sg-tqyth7rwiw7v-influxdb-secgrp-55gqfszqr4qy
+          - apimon_stack-sg-tqyth7rwiw7v-bastion-secgrp-hu4xcog2qjqv

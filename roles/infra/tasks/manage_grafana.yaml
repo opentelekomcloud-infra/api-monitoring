@@ -1,0 +1,19 @@
+---
+# Manage grafana host
+- name: Manage Grafana host
+  include_tasks: openstack.yaml
+  vars:
+    host_server_name: "{{ grafana_host_name }}"
+    host_server_fqdn: "{{ grafana_host_fqdn }}"
+    host_image: "{{ grafana_host_image }}"
+    host_flavor: "{{ grafana_host_flavor }}"
+    host_key_name: "{{ grafana_host_key_name }}"
+    host_auto_ip: "{{ grafana_host_auto_ip }}"
+    host_metadata: "{{ grafana_host_metadata }}"
+    host_security_groups: "{{ grafana_host_security_groups }}"
+    host_network: "{{ grafana_host_network }}"
+    host_data_volume_name: "{{ grafana_host_data_volume_name }}"
+    host_data_volume_size: "{{ grafana_host_data_volume_size }}"
+    host_data_volume_metadata: "{{ grafana_host_data_metadata }}"
+    host_data_volume_type: "{{ grafana_host_data_volume_type }}"
+    host_root_volume_size: "{{ grafana_host_root_volume_size }}"

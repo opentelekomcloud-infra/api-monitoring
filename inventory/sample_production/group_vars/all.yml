@@ -1,0 +1,23 @@
+---
+# Inventory for APImon
+
+domain_name: apimon.tsi-dev.otc-service.com
+apimon_repo: "https://github.com/opentelekomcloud-infra/api-monitoring"
+
+apimon_db_name: apimon
+
+apimon_ssl_cert_content: |
+  grafana_cert_content
+
+apimon_ssl_key_content: |
+  fake_key
+apimon_ssl_client_cert_content: |
+  fake
+
+apimon_ssl_ca_cert_content: |
+  fake
+
+# SSL validation fails, unless IP matches DNS, so disable for now
+apimon_ssl_validate_cert: false
+
+test_keypair_name: api_monitoring_test

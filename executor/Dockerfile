@@ -13,7 +13,7 @@
 FROM fedora:30
 
 RUN dnf --disablerepo updates-modular --disablerepo fedora-modular \
-    install -y git gcc python3-devel nmap-ncat
+    install -y git gcc python3-devel nmap-ncat procps-ng
 
 #RUN apt install ansible
 WORKDIR /usr/app
@@ -24,23 +24,15 @@ RUN git clone https://github.com/ansible/ansible --branch stable-2.8 && \
     git clone https://review.opendev.org/openstack/openstacksdk && \
     cd openstacksdk && \
     git fetch https://review.opendev.org/openstack/openstacksdk \
-      refs/changes/41/659841/6 && git checkout FETCH_HEAD
+      refs/changes/41/659841/10 && git checkout FETCH_HEAD
 
 RUN cd openstacksdk && python3 setup.py install --user
 RUN cd ansible && python3 setup.py install --user
 
 RUN pip3 install --user -r /usr/app/requirements.txt
 
-#FROM fedora:30
-
-#RUN dnf --disablerepo updates-modular --disablerepo fedora-modular \
-#    install -y ansible
-
-#COPY --from=builder /root/.local/ /root/.local
-
 COPY ./entrypoint.sh /usr/app
 COPY ./test.py /usr/app
-# COPY ./proxy.py /root/.local/lib/python3.7/site-packages/openstack/proxy.py
 
 ENV OS_CLOUD=otc
 ENV PATH=/root/.local/bin:$PATH

@@ -1,0 +1,68 @@
+---
+# Variables for the infrastructure setup
+prefix: apimon-
+common_sg_name: "{{ (prefix + 'common-sg') }}"
+bastion_sg_name: "{{ (prefix + 'bastion-sg') }}"
+executor_sg_name: "{{ (prefix + 'executor-sg') }}"
+influxdb_sg_name: "{{ (prefix + 'influxdb-sg') }}"
+grafana_sg_name: "{{ (prefix + 'grafana-sg') }}"
+common_sg_rules:
+ - protocol: tcp
+   port_range_min: 22
+   port_range_max: 22
+   remote_group: "{{ bastion_sg_name }}" 
+ - protocol: icmp
+   remote_group: "{{ bastion_sg_name }}"
+executor_sg_rules:
+ - protocol: tcp
+   port_range_min: 9273
+   port_range_max: 9273
+   remote_group: "{{ common_sg_name }}"
+ - protocol: tcp
+   port_range_min: 8186
+   port_range_max: 8186
+   remote_group: "{{ common_sg_name }}" 
+influxdb_sg_rules:
+ - protocol: tcp
+   port_range_min: 8086
+   port_range_max: 8086
+#   remote_group: "{{ common_sg_name }}" 
+grafana_sg_rules:
+ - protocol: tcp
+   port_range_min: 3000
+   port_range_max: 3000
+#   remote_group: "{{ common_sg_name }}" 
+
+influxdb_host_security_groups:
+  - "{{ common_sg_name }}"
+  - "{{ influxdb_sg_name }}"
+influxdb_host_network:
+  - net-name: "{{ net_name }}"
+grafana_host_security_groups:
+  - "{{ common_sg_name }}"
+  - "{{ grafana_sg_name }}"
+grafana_host_network: "{{ influxdb_host_network }}"
+executor_host_security_groups:
+  - "{{ common_sg_name }}"
+  - "{{ executor_sg_name }}"
+executor_host_network: "{{ influxdb_host_network }}"
+
+
+bastion_host_key_name: ag_nuc_pub
+executor_host_key_name: ag_nuc_pub
+influxdb_host_key_name: ag_nuc_pub
+grafana_host_key_name: ag_nuc_pub
+
+net_name: "{{ (prefix + 'otc-net') }}"
+network: 
+ - {net-name: "{{ (prefix + 'network) }}"}
+
+#domain_name: apimon.tsi-dev.otc-service.com
+influxdb_host_server_fqdn: "{{ ('influx1.' + domain_name ) }}"
+influxdb_host_server_name: "{{ influxdb_host_server_fqdn }}"
+grafana_host_server_fqdn: "{{ ('grafana1.' + domain_name ) }}"
+grafana_host_server_name: "{{ grafana_host_server_fqdn }}"
+executor_host_server_fqdn: "{{ ('executor1.' + domain_name ) }}"
+executor_host_server_name: "{{ executor_host_server_fqdn }}"
+
+loadbalancer_name: apimon_lb

@@ -1,0 +1,7 @@
+---
+
+- name: cleanup temp files
+  file:
+    path: "{{ stack_template_pre.path }}"
+    state: absent
+  when: stack_template_pre.path is defined

@@ -1,0 +1,68 @@
+---
+# Provision infrastructure with Ansible
+
+- name: Provision Keypairs
+  hosts: os_infra
+  tasks:
+    - name: Create Keypairs
+      include_role:
+        name: opentelekomcloud.keypair
+        apply:
+          tags: [keypair]
+      vars: 
+        keypair_name: "{{ item }}"
+      loop:
+        - "{{ bastion_host_key_name }}"
+        - "{{ executor_host_key_name }}"
+        - "{{ influxdb_host_key_name }}"
+        - "{{ grafana_host_key_name }}"
+
+    - include_role:
+        name: opentelekomcloud.vpc
+        apply:
+          tags: vpc
+      vars:
+        network_name: "{{ net_name }}"
+
+    - include_role:
+        name: opentelekomcloud.bastion
+        apply:
+          tags: bastion
+      vars:
+        security_group: "{{ bastion_sg_name }}" 
+        server_keypair_name: "{{bastion_host_key_name}}"
+
+    - name: Create Security groups
+      include_role:
+        name: opentelekomcloud.security_group
+        apply:
+          tags: sg
+      vars: 
+        securitygroup_name: "{{ sg.name }}"
+        rules: "{{ sg.rules }}"
+        description: "{{ sg.descr }}"
+      loop:
+        - {name: "{{common_sg_name}}", rules: "{{common_sg_rules}}",
+           descr: "Common SG for APIMon"}
+        - {name: "{{executor_sg_name}}", rules: "{{executor_sg_rules}}",
+           descr: "Executor SG for APIMon"}
+        - {name: "{{grafana_sg_name}}", rules: "{{grafana_sg_rules}}",
+           descr: "Grafana SG for APIMon"}
+        - {name: "{{influxdb_sg_name}}", rules: "{{influxdb_sg_rules}}",
+           descr: "InfluxDB SG for APIMon"}
+      loop_control:
+        loop_var: sg
+    
+    - name: Create Servers
+      include_role:
+        name: "{{ item }}"
+        tasks_from: provision_openstack.yaml
+        apply:
+          tags: servers
+      loop:
+        - grafana
+        - influxdb
+        - executor
+
+# Create ELB for instances
+- import_playbook: create_lb.yaml

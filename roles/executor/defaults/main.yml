@@ -1,0 +1,27 @@
+---
+# defaults file for roles/grafana
+
+
+
+# Infra defaults
+executor_host_state: "present"
+executor_host_image: "Standard_Fedora_29_latest"
+executor_host_flavor: "s2.xlarge.2"
+executor_host_name: "{{ ('executor.' + domain_name) | default('executor') }}"
+executor_host_availability_zone: "eu-de-03"
+executor_host_root_volume_size: 12
+executor_host_data_volume_name: "executor_data"
+executor_host_data_volume_size: 100
+executor_host_data_volume_type: "SSD"
+# Auto attach FIP
+executor_host_auto_ip: false
+
+executor_host_metadata:
+  host-type: executor
+executor_host_data_volume_metadata:
+  host-type: executor
+
+
+executor_apimon_repo_dest: "~executor/apimon"
+executor_systemd_service_name: executor-service.service
+executor_systemd_unit_path: "{{ ('/etc/systemd/system/' + executor_systemd_service_name ) }}"

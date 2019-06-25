@@ -1,0 +1,35 @@
+---
+# This Playbook mounts devices attached to the instances
+
+- name: Mount InfluxDB storage
+  hosts: influxdb
+  become: true
+  tasks:
+    - include_role: 
+        name: infra
+        tasks_from: mount_storage.yaml
+      vars:
+        device: /dev/vdb
+        mount_point: /var/lib/influxdb
+
+- name: Mount Grafana storage
+  hosts: grafana
+  become: true
+  tasks:
+    - include_role: 
+        name: infra
+        tasks_from: mount_storage.yaml
+      vars:
+        device: /dev/vdb
+        mount_point: /var/lib/grafana
+
+- name: Mount Executor storage
+  hosts: executor
+  become: true
+  tasks:
+    - include_role: 
+        name: infra
+        tasks_from: mount_storage.yaml
+      vars:
+        device: /dev/vdb
+        mount_point: /var/lib/executor
