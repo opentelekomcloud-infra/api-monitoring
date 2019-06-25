@@ -18,7 +18,7 @@ module: os_member
 short_description: Add/Delete a member for a pool in load balancer from OpenTelkomCloud
 extends_documentation_fragment: openstack
 version_added: "2.8"
-author: "Artem Goncharov ()@gtema)"
+author: "Artem Goncharov (@gtema)"
 description:
    - Add or Remove a member for a pool from the OTC load-balancer service.
 options:
