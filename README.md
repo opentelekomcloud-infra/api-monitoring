@@ -1,6 +1,8 @@
 # api-monitoring
 POC of the platform API monitoring
 
+A High-level design of the APImon system is available under [HLD](docs/design.rst)
+
 THIS IS A VERY VERY DRAFT
 
 ## Install galaxy roles
