@@ -6,11 +6,17 @@ A High-level design of the APImon system is available under [HLD](docs/design.rs
 THIS IS A VERY VERY DRAFT
 
 ## Install galaxy roles
+
+This step is only required in reality for the executor component, which means it is only useful when manual execution of the test scenario is required.
+
 ```
     ansible-galaxy install -r requirements.yml
 ```
 
-## Provision Infrastructure components
+
+## Installation
+
+The APIMon can be deployed in multiple environments to keep testing from different places (please see [HLD]/docs/design.rst). There is currently a set of playbook, which helps installing APImon on to the OpenStack based platform (what is actually naturaly the scope of the project). If hardware (or VMs for components already exist, or not supported by the infrastructure installation playbooks), infrastructure preparation can be skipped.
 
 The APIMon consists of 4 components:
  - bastion - bastion host for the infrastructure with floating IP
@@ -18,13 +24,33 @@ The APIMon consists of 4 components:
  - influxdb - an InfluxDB instance as a TimeSeries DB
  - grafana - instance of Grafana, which shows gathered metrics
 
-Inventory must be prepared, before the infrastructure can be provisioned.
+### Inventory
+
+Inventory must be prepared, already before the infrastructure can be provisioned. This is required to know how to name resources, which FQDNs to use, which private keys to use to access instances.
+
+Inventory consists of following components:
+
+- hosts.yaml - contains host-relevant data (ips, access data, host-specific passwords, etc)
+- group_vars/all.yaml - contains common variables, ssl keys, domain name, etc
+- group_vars/os_infra.yaml - data relevant for the infrastructure provisioning (keys, security groups, flavors, etc.)
+- group_vars/grafana.yaml - variables for the grafana target
+- group_vars/influxdb.yaml - variables for influxdb
+- group_vars/executor.yaml - executor variables
+- group_vars/telegraf.yaml - telegraf variables
+
+### Infrastructure provisioning
+
+Ansible can be used to provision infrastructure on top of the OpenStack, For that a proper cloud connection should be present on the management host (presumably localhost) - clouds.yaml
+
 
 ```
     ansible-playbook -i inventory/production playbooks/install/provision_infra.yaml
 ```
 
+This step creates 4 instances (bastion, executor+telegraf, influx, grafana), load balancer.
+
 The next step will be to configure connections and inventory with the newly created instances. This consists of few steps:
+
 1. Configuring bastion host in the ~/.ssh/config to be proxying connections
 ```
    Host apimon-bastion
@@ -33,14 +59,20 @@ The next step will be to configure connections and inventory with the newly crea
    ControlMaster auto
    ControlPersist 5m
 ```
+
 2. Modify inventory/production/hosts.yaml with IP addresses of the instances. It is also a time to fill the inventory with the proper initial secrets (i.e. for influxdb admin user). One option would be to execute `< /dev/urandom tr -fc _A-Z-a-z-0-9 | head -c${1:-32};echo;`
 
-Now we can bootstrap/deploy hosts and execute:
+
+### Installation
+
+When target hosts are present, configured in the inventory the required software can be provisioned there:
+
 ```
-  ansible
+  ansible -i inventory/production playbooks/install/bootstrap.yaml
 ```
 
-Playbooks:
+
+Playbooks description:
  - install/bootstrap.yaml - provisions `server_common` role to all inventory hosts (especially to be able to access hosts behind bastion, mount attached volumes to required places and installs influxdb and grafana.
  - install/install_influxdb.yaml - included in the bootstrap.yaml. Indivudial steps for influxdb provisioning (installation, creation of admin user and apimon database). Users for telegraf and grafana are not created in this step.
  - install/install_grafana.yaml - included in the bootstrap.yaml. Individual steps for grafans provisioning (installation). Provisioning stuff is mounted into the container running grafana, but it is intended, that datasources are installed separately by "connection" another instance of influxdb into the map.
@@ -48,6 +80,8 @@ Playbooks:
  - install/connect_influx_to_grafana.yaml - Creates a read-only user for grafana on a specific (user-input) influxdb instance and provision corresponding datasource to the grafana. A random password is generated for that and not really saved anywhere (except datasource itself).
 
 ## Developer setup
+
+#NOTE:# This is under reworking currently to reuse as much pieces from the proper installation as possible.
 
 It is possible to use tools for development purposes locally with the help of docker-compose (P.S. minishift/minikube would be nice to have)
 In order to start it prepare inventory by copying testing inventory folder into something useful (please note testing inventory is saved in git, therefore please do not place any sensitive information. Inventory/production is excluded by gitignore not to accidentially leak data) and modify data as you need (especially cloud credentials in the clouds.yaml must be real).
