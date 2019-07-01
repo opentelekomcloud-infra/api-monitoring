@@ -24,7 +24,6 @@ The APIMon consists of 4 components:
  - influxdb - an InfluxDB instance as a TimeSeries DB
  - grafana - instance of Grafana, which shows gathered metrics
 
-
 ### Prerequisites
 	
  - ansible - should be at least 2.8.1
