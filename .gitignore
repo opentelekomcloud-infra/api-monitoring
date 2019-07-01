@@ -4,3 +4,4 @@ inventory/production
 __pycache__
 *.retry
 playbooks/install/credentials/*
+*.swp
