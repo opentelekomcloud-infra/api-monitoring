@@ -5,3 +5,4 @@ __pycache__
 *.retry
 playbooks/install/credentials/*
 *.swp
+*.swo

@@ -31,21 +31,7 @@
       register: listener_results
       loop:
         - {name: "lsnr_influxdb", protocol: "TCP", port: 8086}
-        - {name: "lsnr_grafana", protocol: "TCP", port: 3000}
-          # async: 60
-          #       poll: 1
-
-          #     - name: Wait for creation to finish
-          #       async_status:
-          #         jid: "{{ item.ansible_job_id }}"
-          #       register: _jobs
-          #       until: _jobs.finished
-          #       delay: 1
-          #       retries: 10  # Retry up to 10 times. Adjust as needed.
-          #       with_items: "{{ listener_results.results }}"
-          # 
-          #     - debug:
-          #         var: listener_results
+        - {name: "lsnr_grafana", protocol: "TCP", port: 443}
 
     - set_fact:
         listeners: "{{ listeners| default({}) | combine({ item.item.name: item.id }) }}"
@@ -65,22 +51,8 @@
            descr: "InfluxDB Pool", protocol: "TCP", algo: "SOURCE_IP"}
         - {name: "pool_grafana", listener: "{{ listeners.lsnr_grafana }}",
            descr: "Grafana Pool", protocol: "TCP", algo: "SOURCE_IP"}
-           #      async: 60
-           #      poll: 1
       register:
         pool_results
-
-        #     - name: Wait for creation to finish
-        #       async_status:
-        #         jid: "{{ item.ansible_job_id }}"
-        #       register: _jobs
-        #       until: _jobs.finished
-        #       delay: 1  # Check every 5 seconds. Adjust as you like.
-        #       retries: 10  # Retry up to 10 times. Adjust as needed.
-        #       with_items: "{{ pool_results.results }}"
-        # 
-        #     - debug:
-        #         var: pools
 
     - set_fact:
         pools: "{{ pools| default({}) | combine({ item.item.name: item.id }) }}"
