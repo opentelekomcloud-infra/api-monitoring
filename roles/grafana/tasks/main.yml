@@ -46,9 +46,13 @@
     mode: 0775
 
 - name: Write Grafana config env file
+  become: true
   template:
     src: env
     dest: /etc/grafana/env
+    group: grafana
+    owner: grafana
+    mode: 0770
 
     # - name: Write Grafana custom config file
     #   template:
