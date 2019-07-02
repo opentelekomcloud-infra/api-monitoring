@@ -4,6 +4,8 @@ Cloud API Monitoring: High-level Design
 :Authors:
     Artem Goncharov (artem.goncharov@t-systems.com)
     Nils Magnus (nils.magnus@t-systems.com)
+    Vladimir Hasko (vladimir.hasko@t-systems.com)
+    Tino Schreiber (tino.schreiber@t-systems.com)
 
 :Copyright:
     (c) 2019 by Open Telekom Cloud (https://open-telekom-cloud.com/)
@@ -12,53 +14,50 @@ Cloud API Monitoring: High-level Design
 
 :Availability: public
 
-This document describes the design for a service that monitors
-OpenStack based cloud APIs. This service is useful for operators and
-users of clouds alike, since it displays the availability of the
-manifold cloud services. It is also a useful tool, supporting the
-mitigation process of outages and other incidents. The service is
-called henceforth API-Monitoring.
+This document describes the design for a service that monitors OpenStack based
+cloud APIs. This service is useful for operators and users of clouds alike,
+since it displays the availability of the manifold cloud services. It is also a
+useful tool, supporting the mitigation process of outages and other incidents.
+The service is called henceforth API-Monitoring (a.k.a. APIMon).
 
 While it was developed for the Open Telekom Cloud, all designs and
-implementation described in this document apply to any upstream
-compatible OpenStack cloud instance unless otherwise noted.
+implementation described in this document apply to any upstream compatible
+OpenStack cloud instance unless otherwise noted.
 
 
 Current Situation
 -----------------
 
-A full-scale public cloud setup is a complex piece of software,
-comprising of many API driven services with a lot of functions and
-even more attributes. Outages in particular services are difficult to
-detect in a timely manner if monitored manually.
+A full-scale public cloud setup is a complex piece of software, comprising of
+many API driven services with a lot of functions and even more attributes.
+Outages in particular services are difficult to detect in a timely manner if
+monitored manually.
 
-This service mitigates the delayed detection of outages and helps to
-detect issues for both userss and operators of a cloud offering.
+This service mitigates the delayed detection of outages and helps to detect
+issues for both users and operators of a cloud offering.
 
 
 Acceptance Criteria
 -------------------
 
-Since "service", "availability", "incidents", and "outages" are terms
-that are hard to define, this is a list of criteria the API-monitoring
-should implement:
+Since "service", "availability", "incidents", and "outages" are terms that are
+hard to define, this is a list of criteria the API-monitoring should implement:
 
-* The API-monitoring **covers all relevant services** of a cloud setup
-  from a user perspective.
-* The API-monitoring checks for the **availability of the service
-  endpoints**.
-* The API-monitoring verifies if the **actual services** behind the
-  endpoints are really available and are performing the desired action.
-* The checks of the API-monitoring are **easy to write** and use a
-  wide-spread language to describe test cases.
-* The checks of the API-monitoring are **easy to extend** and not built in
-  the monitoring itself.
-* The API-monitoring executes realistic user-scenarios, comprising a
-  sequence of single steps reflectig actual use cases.
-* The API-monitoring itself is **highly available** even if parts, or the
-  whole cloud is not available. This includes any cloud service and
-  the networking up to and including the upstream exchange point with
-  the Internet service provider.
+* The API-monitoring **covers all relevant services** of a cloud setup from a
+  user perspective.
+* The API-monitoring checks for the **availability of the service endpoints**.
+* The API-monitoring verifies if the **actual services** behind the endpoints
+  are really available and are performing the desired action.
+* The checks of the API-monitoring are **easy to write** and use a wide-spread
+  language to describe test cases.
+* The checks of the API-monitoring are **easy to extend** and not built in the
+  monitoring itself.
+* The API-monitoring executes realistic user-scenarios, comprising a sequence
+  of single steps reflectig actual use cases.
+* The API-monitoring itself is **highly available** even if parts, or the whole
+  cloud is not available. This includes any cloud service and the networking up
+  to and including the upstream exchange point with the Internet service
+  provider.
 
 
 Out of Scope
@@ -69,9 +68,10 @@ The following items are out of scope:
 #. No performance monitoring: The API-monitoring does not measure
    degrations of performance, unless the performance does not dropped
    under some threshold that is considered as equivalent to
-   non-available.
+   non-available. The performance of each individual tested API call is
+   measured and becomes visible in the Grafana, so that evaluation is possible.
 #. No application monitoring: The service availability of applications
-   that run on top of the IaaS or PaaS of the cloud are out of scope.
+   that run on top of IaaS or PaaS of the cloud are out of scope.
 #. No inside scope: The API-monitoring has no insights only acessible
    from the backplane of the monitored cloud. It requires thus no
    administrative permissions on the backend.
@@ -82,23 +82,23 @@ The following items are out of scope:
 Solution Approach and Architecture
 ----------------------------------
 
-The API-monitoring project permanently supervises the public APIs of
-an OpenStack-based platform. Since it uses Ansible to execute
-individual test it also may be used for any other activities [XXX:
-Like what?]. The flow of monitored data is organized in a pipeline
-from collecting metric data on individual client instances,
-aggragating them on the clients, storing and processing data, and
-finally visualizing and alerting under some circumstances.
+The API-monitoring project permanently supervises the public APIs of an
+OpenStack-based platform. Since it uses Ansible to execute individual test it
+also may be used for any other activities [XXX: Like what?]. The flow of
+monitored data is organized in a pipeline from collecting metric data on
+individual client instances, aggragating them on the clients, storing and
+processing data, and finally visualizing and alerting under some circumstances.
 
-In the core of the system an `Executor` component is located,
-triggering permanently test scenarios written as Ansible
-playbooks. The scenarios are stored in a Git repository. Data
-generated by the playbooks is then being sent as metrics to the
-`Telegraf` instance in any [XXX: What does this mean?] supported
-format. `Telegraf` is then responsible for sending data to a
-`InfluxDB` instance, to store it as a time series. This data is unique
-for each enviroment where it is working. It is also being consumed by
-a clustered `Grafana` to present the monitoring results.
+In the core of the system an `Executor` component is located, triggering
+permanently test scenarios written as Ansible playbooks. The scenarios are
+stored in a Git repository. Data generated by the playbooks is then being sent
+as metrics to the `Telegraf` instance in any [XXX: What does this mean?]
+supported format. `Telegraf` is then responsible for sending data to a
+`InfluxDB` instance, to store it as a time series data. This data is unique for
+each enviroment where it is working, meaning that it metrics are the same, but
+the values are different for different environment (i.e. duration of server
+creation from inside the cloud and from outside of the cloud). It is later then being
+consumed by a clustered `Grafana` to present the monitoring results.
 
 ::
 
@@ -135,36 +135,35 @@ the platform, but still uses the API of this platform to provision resourses.
 Executor
 --------
 
-The `Executor` component of the API-monitoring system is responsible
-for scheduling and executing individual jobs defined as Ansible
-playbooks in a configured repository. It is implemented as a process,
-which periodically scans the repository and for each found scenario
-playbook it forks a process, which will endlessly repeat it (probably
-with some delay, if required). Those processes generate metrics in two
-ways:
+The `Executor` component of the API-monitoring system is responsible for
+scheduling and executing individual jobs defined as Ansible playbooks in a
+configured repository. It is implemented as a process, which periodically scans
+the repository and for each found scenario playbook it forks a process, which
+will endlessly repeat it (probably with some delay, if required). Those
+processes generate metrics in two ways:
 
 - undelaying playbook exposes metrics from the used libraries
 - Ansible plugins exposes additional metrics (i.e. whether the overall
   scenario succedded or not)
 
-In the case of monitoring OpenStack APIs a functionality of
-OpenStack-SDK library used by Ansible modules to export metrics on
-each individual executed API call is exposed. This requires some
-special configuration in the `clouds.yaml` file (currently exposing
-metrics into statsd and InfluxDB is supported). For details please
-refer to the [documentation of OpenStack-SDK](https://docs.openstack.org/openstacksdk/latest/user/config/configuration.html#config-files).
+In the case of monitoring OpenStack APIs a functionality of OpenStack-SDK
+library used by Ansible modules to export metrics on each individual executed
+API call is exposed. This requires some special configuration in the
+`clouds.yaml` file (currently exposing metrics into statsd and InfluxDB is
+supported). For details please refer to the [documentation of
+OpenStack-SDK](https://docs.openstack.org/openstacksdk/latest/user/config/configuration.html#config-files).
 
-Since in complex cases it might not be sufficient only to know the
-timings of each individual made call Ansible callback can be
-implemented to report overall execution time and result (whether the
-overall scenario succeded and how long did it took).
+Since in complex cases it might not be sufficient only to know the timings of
+each individual made call Ansible callback can be implemented to report overall
+execution time and result (whether the overall scenario succeded and how long
+did it took).
 
 
 Telegraf
 --------
 
 The `Executor` is exposing metrics, but where do the go? One option is
-to place instance of `Telegraf` to accept metrics from the `Executor`
+to place an instance of `Telegraf` to accept metrics from the `Executor`
 and serve as a proxy to place data (with potentially format
 conversion) into a required destination. In our case it is proxying
 InfluxDB-format inserts into the real database, which might require
