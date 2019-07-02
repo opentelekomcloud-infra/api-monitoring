@@ -55,7 +55,7 @@ grafana_host_key_name: ag_nuc_pub
 
 net_name: "{{ (prefix + 'otc-net') }}"
 network: 
- - {net-name: "{{ (prefix + 'network) }}"}
+ - {net-name: "{{ (prefix + 'network') }}"}
 
 #domain_name: apimon.tsi-dev.otc-service.com
 influxdb_host_server_fqdn: "{{ ('influx1.' + domain_name ) }}"
