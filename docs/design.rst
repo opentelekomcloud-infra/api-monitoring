@@ -82,7 +82,7 @@ The API-monitoring project permanently supervises the public APIs of an
 OpenStack-based platform. Since it uses Ansible to execute individual test it
 also may be used for any other activities [XXX: Like what?]. The flow of
 monitored data is organized in a pipeline from collecting metric data on
-individual client instances, aggragating them on the clients, storing and
+individual client instances, aggregating them on the clients, storing and
 processing data, and finally visualizing and alerting under some circumstances.
 
 In the core of the system an `Executor` component is located, triggering
@@ -142,7 +142,7 @@ the repository and for each found scenario playbook it forks a process, which
 will endlessly repeat it (probably with some delay, if required). Those
 processes generate metrics in two ways:
 
-- undelaying playbook exposes metrics from the used libraries
+- underlaying playbook exposes metrics from the used libraries
 - Ansible plugins exposes additional metrics (i.e. whether the overall
   scenario succedded or not)
 
@@ -162,7 +162,7 @@ did it took).
 Telegraf
 --------
 
-The `Executor` is exposing metrics, but where do the go? One option is
+The `Executor` is exposing metrics, but where do they go? One option is
 to place an instance of `Telegraf` to accept metrics from the `Executor`
 and serve as a proxy to place data (with potentially format
 conversion) into a required destination. In our case it is proxying
