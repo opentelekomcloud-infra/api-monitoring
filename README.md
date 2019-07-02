@@ -7,7 +7,7 @@ THIS IS A VERY VERY DRAFT
 
 ## Install galaxy roles
 
-This step is only required in reality for the executor component, which means it is only useful when manual execution of the test scenario is required.
+Multiple playbooks are using galaxy roles, so it is required to install those.
 
 ```
     ansible-galaxy install -r requirements.yml
@@ -23,6 +23,12 @@ The APIMon consists of 4 components:
  - executor - host running jobs and telegraf (for metrics forwarding)
  - influxdb - an InfluxDB instance as a TimeSeries DB
  - grafana - instance of Grafana, which shows gathered metrics
+
+
+### Prerequisites
+	
+ - ansible - should be at least 2.8.1
+ - python3-openstacksdk - should be at least 0.26.x
 
 ### Inventory
 
@@ -76,8 +82,12 @@ Playbooks description:
  - install/bootstrap.yaml - provisions `server_common` role to all inventory hosts (especially to be able to access hosts behind bastion, mount attached volumes to required places and installs influxdb and grafana.
  - install/install_influxdb.yaml - included in the bootstrap.yaml. Indivudial steps for influxdb provisioning (installation, creation of admin user and apimon database). Users for telegraf and grafana are not created in this step.
  - install/install_grafana.yaml - included in the bootstrap.yaml. Individual steps for grafans provisioning (installation). Provisioning stuff is mounted into the container running grafana, but it is intended, that datasources are installed separately by "connection" another instance of influxdb into the map.
- - install/install/executor.yaml - included in the bootstrap.yaml. Individual steps for executor host provisioning. It includes local telegraf container (forwards influxdb writes to real InfluxDB) and the executor itself.
+ - install/install_executor.yaml - included in the bootstrap.yaml. Individual steps for executor host provisioning. It includes local telegraf container (forwards influxdb writes to real InfluxDB) and the executor itself.
  - install/connect_influx_to_grafana.yaml - Creates a read-only user for grafana on a specific (user-input) influxdb instance and provision corresponding datasource to the grafana. A random password is generated for that and not really saved anywhere (except datasource itself).
+
+After bootstrap step it is required to connect influxdb and grafana by executing `playbooks/install/connect_influx_to_grafana.yaml` playbook. After that step a proper datasource is available in grafana. Dashboards/pannels are not installed automatically as of now.
+
+In addition current state is that building image on the executor hangs (propably TCPForward connection issue) and Ansible does not recognize, when the process is stopped. So it is required to abort at this step after around 5 minutes (yes, will be fixed ASAP). After that you can manually execute `sudo systemctl start executor-service` on the executor host. As already mentioned dashboard is not provisioned currently, so no data will be visible in grafana.
 
 
 ### Test project creation
