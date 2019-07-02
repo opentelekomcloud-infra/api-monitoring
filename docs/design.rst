@@ -2,16 +2,12 @@ Cloud API Monitoring: High-level Design
 =======================================
 
 :Authors:
-    Artem Goncharov (artem.goncharov@t-systems.com)
-    Nils Magnus (nils.magnus@t-systems.com)
-    Vladimir Hasko (vladimir.hasko@t-systems.com)
+    Artem Goncharov (artem.goncharov@t-systems.com);
+    Nils Magnus (nils.magnus@t-systems.com);
+    Vladimir Hasko (vladimir.hasko@t-systems.com);
     Tino Schreiber (tino.schreiber@t-systems.com)
-
-:Copyright:
-    (c) 2019 by Open Telekom Cloud (https://open-telekom-cloud.com/)
-
+:Copyright: 2019 by Open Telekom Cloud (https://open-telekom-cloud.com/)
 :Version: 1.0 as-of 2019/07/01 (work in progress)
-
 :Availability: public
 
 This document describes the design for a service that monitors OpenStack based
