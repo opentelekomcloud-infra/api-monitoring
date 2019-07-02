@@ -101,6 +101,7 @@ creation from inside the cloud and from outside of the cloud). It is later then
 being consumed by a clustered `Grafana` to present the monitoring results.
 
 ::
+
     +----------------------------------------------------------------------------------------+
     | Environment 1                                                                          |
     |  +---------+     +---------+     +---------+               +--------+     +----------+ |
