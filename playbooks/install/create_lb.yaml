@@ -31,7 +31,7 @@
       register: listener_results
       loop:
         - {name: "lsnr_influxdb", protocol: "TCP", port: 8086}
-        - {name: "lsnr_grafana", protocol: "TCP", port: 443}
+        - {name: "lsnr_grafana", protocol: "TCP", port: "{{ grafana_public_port }}"}
 
     - set_fact:
         listeners: "{{ listeners| default({}) | combine({ item.item.name: item.id }) }}"

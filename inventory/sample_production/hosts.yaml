@@ -44,3 +44,7 @@ all:
     grafana:
       hosts:
         grafana1:
+    os_infra:
+      hosts:
+        localhost:
+          absible_connection: local

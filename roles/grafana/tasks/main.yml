@@ -65,6 +65,8 @@
     content: "{{ item.content }}"
     dest: "{{ ('/etc/ssl/' + item.name) }}"
     mode: "{{ item.mode }}"
+    group: grafana
+    owner: grafana
   loop:
     - {content: "{{grafana_ssl_cert_content}}", 
        name: "{{grafana_ssl_cert_name}}",

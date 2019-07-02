@@ -8,7 +8,7 @@
       otc_loadbalancer:
         name: "{{ loadbalancer_name }}"
         state: absent
-    # TODO(gtema): FIP is not deleted
+        delete_public_ip: true
 
     - name: Destroy hosts
       include_role:
