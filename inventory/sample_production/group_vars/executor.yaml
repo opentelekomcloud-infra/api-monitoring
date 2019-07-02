@@ -1,6 +1,5 @@
 ---
 # Inventory for executors
-
 clouds_yaml_content: |
   metrics:
    statsd:
@@ -16,9 +15,9 @@ clouds_yaml_content: |
     otc:
       auth:
         auth_url: https://iam.eu-de.otc.t-systems.com:443/v3
-        project_name: fake
-        user_domain_name: fake
-        username: fake
-        password: fake
+        project_name: {{ test_project_name }}
+        user_domain_name: {{ test_domain_name }}
+        username: {{ test_user_name }} 
+        password: {{ test_user_password }}
       interface: public
-      identity_api_version: 3
+      identity_api_version: 3 

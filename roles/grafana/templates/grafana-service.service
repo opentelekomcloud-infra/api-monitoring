@@ -20,13 +20,12 @@ ExecStartPre=-/usr/bin/podman rm "grafana"
 
 ExecStart=/usr/bin/podman run \
     --name "grafana" \
-    --user $ID \
+    --userns keep-id \
     --env-file /etc/grafana/env \
     -p 3000:3000 \
-    -v /var/lib/grafana:/var/lib/grafana:Z \
     -v /etc/grafana/provisioning:/etc/grafana/provisioning:Z \
-    -v /etc/ssl/{{grafana_ssl_cert_name}}:/etc/ssl/grafana.crt:Z \
-    -v /etc/ssl/{{grafana_ssl_key_name}}:/etc/ssl/grafana.key:Z \
+    -v /etc/ssl/{{grafana_ssl_cert_name}}:/etc/ssl/grafana.crt:ro \
+    -v /etc/ssl/{{grafana_ssl_key_name}}:/etc/ssl/grafana.key:ro \
     ${GRAFANA_IMAGE}
 
 ExecReload=-/usr/bin/podman stop "grafana"

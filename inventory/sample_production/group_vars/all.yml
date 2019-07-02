@@ -3,6 +3,8 @@
 
 domain_name: apimon.tsi-dev.otc-service.com
 apimon_repo: "https://github.com/opentelekomcloud-infra/api-monitoring"
+lb_public_ip: ____PUBLIC_IP___
+grafana_public_port: 443
 
 apimon_db_name: apimon
 
@@ -20,4 +22,9 @@ apimon_ssl_ca_cert_content: |
 # SSL validation fails, unless IP matches DNS, so disable for now
 apimon_ssl_validate_cert: false
 
-test_keypair_name: api_monitoring_test
+# Section with credentials for the project in which tests are executed
+test_domain_name: xxx
+test_project_name: xxx
+test_user_name: xxx
+test_user_password: xxx
+

@@ -79,6 +79,18 @@ Playbooks description:
  - install/install/executor.yaml - included in the bootstrap.yaml. Individual steps for executor host provisioning. It includes local telegraf container (forwards influxdb writes to real InfluxDB) and the executor itself.
  - install/connect_influx_to_grafana.yaml - Creates a read-only user for grafana on a specific (user-input) influxdb instance and provision corresponding datasource to the grafana. A random password is generated for that and not really saved anywhere (except datasource itself).
 
+
+### Test project creation
+
+There is a playbook for creating a standalone project/user_group/user where the tests might be executed. 
+
+```
+  OS_CLOUD=cloud_with_domain_scope -i inventory/production playbooks/install/create_test_project.yaml
+```
+
+This playbook takes `test_project_name`, `test_domain_name`, `test_user_name`, `test_user_password` and creates corresponding project, user_group and user correspondigly. Currently the script contains predefined list of roles to be assigned to the group, so if those are different in the target environment (which most likely is) - adapt script.
+
+
 ## Developer setup
 
 #NOTE:# This is under reworking currently to reuse as much pieces from the proper installation as possible.

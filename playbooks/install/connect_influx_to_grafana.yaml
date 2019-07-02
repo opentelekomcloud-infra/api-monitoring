@@ -37,7 +37,7 @@
     - name: Add datasource
       grafana_datasource:
         name: "{{ (item + '-datasource') }}"
-        grafana_url: "{{ ('https://' + grafana_public_ip + ':' + grafana_public_port) }}"
+        grafana_url: "{{ ('https://' + grafana_public_ip + ':' + grafana_public_port|string) }}"
         grafana_user: "admin"
         grafana_password: "{{ grafana_security_admin_password }}"
         org_id: "1"
