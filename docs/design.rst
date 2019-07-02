@@ -125,7 +125,7 @@ stack of potential issues, which can lead to situations, where platform is
 performing well, when being tested from inside, from outside it can be
 completely unavailable or have other connectivity or performance issues due to
 the missconfiguration of the API gateways or simply internet connectivity. To
-address that it is suggested to porform tests at least in 2 environments: one
+address that it is suggested to perform tests at least in 2 environments: one
 is inside of the platform, and another outside invoking a real internet
 connections. This approach also helps making alerting and the dashboards
 themselves available also in the case of the platform outage (system will be
