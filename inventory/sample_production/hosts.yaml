@@ -14,14 +14,14 @@ all:
       ansible_user: linux
       influxdb_admin_user_name: admin
       # Generate Admin pass, i.e. with "< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-32};echo;"
-      dinfluxdb_admin_user_password: fake
+      influxdb_admin_user_password: fake
       influxdb_grafana_user_name: grafana
       influxdb_grafana_user_password: fake
       influxdb_telegraf_user_name: telegraf
       influxdb_telegraf_user_password: fake
       influxdb_public_ip: "{{ lb_public_ip }}"
     grafana1:
-      ansible_host: 192.168.110.68__
+      ansible_host: 192.168.110.68
       ansible_user: linux
       grafana_public_ip: "{{ lb_public_ip }}"
   vars:
