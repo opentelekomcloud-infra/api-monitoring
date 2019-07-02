@@ -24,6 +24,11 @@ The APIMon consists of 4 components:
  - influxdb - an InfluxDB instance as a TimeSeries DB
  - grafana - instance of Grafana, which shows gathered metrics
 
+### Prerequisites
+
+- ansible - should be at least 2.8.1
+- python3-openstacksdk - should be at least 0.26.x
+
 ### Inventory
 
 Inventory must be prepared, already before the infrastructure can be provisioned. This is required to know how to name resources, which FQDNs to use, which private keys to use to access instances.
