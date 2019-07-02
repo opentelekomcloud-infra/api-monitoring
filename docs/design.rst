@@ -97,39 +97,42 @@ supported format. `Telegraf` is then responsible for sending data to a
 `InfluxDB` instance, to store it as a time series data. This data is unique for
 each enviroment where it is working, meaning that it metrics are the same, but
 the values are different for different environment (i.e. duration of server
-creation from inside the cloud and from outside of the cloud). It is later then being
-consumed by a clustered `Grafana` to present the monitoring results.
+creation from inside the cloud and from outside of the cloud). It is later then
+being consumed by a clustered `Grafana` to present the monitoring results.
 
 ::
-
-    +---------------------------------------------------------------------------------------+
-    | Environment 1                                                                         |
-    |  +---------+     +---------+     +---------+               +--------+     +---------+ |
-    |  |Executor |---->|Telegraf |---->|InfluxDB | ------------->|Grafana |---->|         | |
-    |  |Ansible  |     +---------+     +---------+ \             +--------+     |         | |
-    |  |OS-SDK   |                                  \           -/              |         | |
-    |  +---------+                                   \         -/               |         | |
-    |                                                 \       -/                |Clustered| |
-    +---------------------------------------------------------------------------|         |-+
-                                                        -\-/                    |Grafana  |
-                                                        -/-\                    |         |
-    +---------------------------------------------------------------------------|Database |-+
-    |                                               -/        -\                |         | |
-    |  +---------+     +---------+     +---------+-/            >+--------+     |         | |
-    |  |Executor |---->|Telegraf |---->|InfluxDB | ------------->|Grafana |---->|         | |
-    |  |Ansible  |     +---------+     +---------+               +--------+     |         | |
-    |  |OS-SDK   |                                                              |         | |
-    |  +---------+                                                              |         | |
-    | Environment 2                                                             +---------+ |
-    +---------------------------------------------------------------------------------------+
+    +----------------------------------------------------------------------------------------+
+    | Environment 1                                                                          |
+    |  +---------+     +---------+     +---------+               +--------+     +----------+ |
+    |  |Executor |---->|Telegraf |---->|InfluxDB |-------------->|Grafana |<--->|          | |
+    |  +---------+     +---------+     +---------+-\            >+--------+     |          | |
+    |                                               -\        -/                |          | |
+    +--------------------------------------------------------/------------------|Clustered |-+
+                                                        -\-/                    |Grafana   |  
+                                                        -/-\                    |Database  |  
+    +--------------------------------------------------/------------------------|          |-+
+    |                                               -/        -\                |          | |
+    |  +---------+     +---------+     +---------+-/            >+--------+     |          | |
+    |  |Executor |---->|Telegraf |---->|InfluxDB |-------------->|Grafana |<--->|          | |
+    |  +---------+     +---------+     +---------+               +--------+     |          | |
+    | Environment 2                                                             +----------+ |
+    +----------------------------------------------------------------------------------------+
 
     Schematic Architecture
 
-To ensure that the API works from inside of the platform make not that much
-sense without ensuring that it is also working from outside the platform. To
-ensure this a similar setup is being deployed as other environment outside of
-the platform, but still uses the API of this platform to provision resourses.
-[XXX: rewrite of this paragraph]
+While it is possible to only perform the testing inside of the platform itself
+(have a VM on the platform, which executes the tests and keeps results on the
+platform), it does not really tests all the APIs, how end customer would do
+that (both from inside and through the internet). There is also additional
+stack of potential issues, which can lead to situations, where platform is
+performing well, when being tested from inside, from outside it can be
+completely unavailable or have other connectivity or performance issues due to
+the missconfiguration of the API gateways or simply internet connectivity. To
+address that it is suggested to porform tests at least in 2 environments: one
+is inside of the platform, and another outside invoking a real internet
+connections. This approach also helps making alerting and the dashboards
+themselves available also in the case of the platform outage (system will be
+most likely not able to inform operations that it is not available).
 
 
 Executor
