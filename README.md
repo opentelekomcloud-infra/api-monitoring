@@ -16,7 +16,7 @@ This step is only required in reality for the executor component, which means it
 
 ## Installation
 
-The APIMon can be deployed in multiple environments to keep testing from different places (please see [HLD]/docs/design.rst). There is currently a set of playbook, which helps installing APImon on to the OpenStack based platform (what is actually naturaly the scope of the project). If hardware (or VMs for components already exist, or not supported by the infrastructure installation playbooks), infrastructure preparation can be skipped.
+The APIMon can be deployed in multiple environments to keep testing from different places (please see [HLD]/docs/design.rst). There is currently a set of playbook, which helps installing APImon on to the OpenStack based platform (what is actually naturally the scope of the project). If hardware (or VMs for components already exist, or not supported by the infrastructure installation playbooks), infrastructure preparation can be skipped.
 
 The APIMon consists of 4 components:
  - bastion - bastion host for the infrastructure with floating IP
@@ -27,7 +27,8 @@ The APIMon consists of 4 components:
 ### Prerequisites
 
 - ansible - should be at least 2.8.1
-- python3-openstacksdk - should be at least 0.26.x
+- python-openstacksdk - should be at least 0.26.x
+- python3
 
 ### Inventory
 
@@ -79,8 +80,8 @@ When target hosts are present, configured in the inventory the required software
 
 Playbooks description:
  - install/bootstrap.yaml - provisions `server_common` role to all inventory hosts (especially to be able to access hosts behind bastion, mount attached volumes to required places and installs influxdb and grafana.
- - install/install_influxdb.yaml - included in the bootstrap.yaml. Indivudial steps for influxdb provisioning (installation, creation of admin user and apimon database). Users for telegraf and grafana are not created in this step.
- - install/install_grafana.yaml - included in the bootstrap.yaml. Individual steps for grafans provisioning (installation). Provisioning stuff is mounted into the container running grafana, but it is intended, that datasources are installed separately by "connection" another instance of influxdb into the map.
+ - install/install_influxdb.yaml - included in the bootstrap.yaml. Individual steps for influxdb provisioning (installation, creation of admin user and apimon database). Users for telegraf and grafana are not created in this step.
+ - install/install_grafana.yaml - included in the bootstrap.yaml. Individual steps for grafana provisioning (installation). Provisioning stuff is mounted into the container running grafana, but it is intended, that datasources are installed separately by "connection" another instance of influxdb into the map.
  - install/install/executor.yaml - included in the bootstrap.yaml. Individual steps for executor host provisioning. It includes local telegraf container (forwards influxdb writes to real InfluxDB) and the executor itself.
  - install/connect_influx_to_grafana.yaml - Creates a read-only user for grafana on a specific (user-input) influxdb instance and provision corresponding datasource to the grafana. A random password is generated for that and not really saved anywhere (except datasource itself).
 
