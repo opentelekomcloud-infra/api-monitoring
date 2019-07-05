@@ -1,3 +1,4 @@
 otcextensions
+GitPython
 statsd
 influxdb
