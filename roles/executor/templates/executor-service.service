@@ -19,10 +19,10 @@ ExecStart=/bin/sh -c "/usr/bin/podman run \
   -v ~executor/.config/openstack:/etc/openstack:ro \
   opentelekomcloudinfra:task_executor"
 
-ExecReload=-/usr/bin/podman stop executor
+ExecReload=-/usr/bin/podman stop -t 120 executor
 ExecReload=-/usr/bin/podman rm executor
 
-ExecStop=/usr/bin/podman stop -t 10 executor
+ExecStop=/usr/bin/podman stop -t 120 executor
 
 [Install]
 WantedBy=multi-user.target
