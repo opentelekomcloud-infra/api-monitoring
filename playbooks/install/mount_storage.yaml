@@ -32,4 +32,4 @@
         tasks_from: mount_storage.yaml
       vars:
         device: /dev/vdb
-        mount_point: /var/lib/executor
+        mount_point: /var/lib/containers
