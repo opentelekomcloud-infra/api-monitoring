@@ -41,22 +41,9 @@
     content: "{{ clouds_yaml_content }}"
     dest: "~executor/.config/openstack/clouds.yaml"
 
-- name: Checkout apimon
+- name: Write env
   become: true
   become_user: executor
-  git: 
-    repo: "{{ apimon_repo }}"
-    dest: "{{ executor_apimon_repo_dest }}"
-
-- name: Ensure build script is executable
-  become: true
-  file:
-    dest: "{{ executor_apimon_repo_dest }}/executor/build_image_buildah.sh"
-    mode: 0775
-
-- name: Build executor image
-  become: true
-  become_user: executor
-  command: "{{ executor_apimon_repo_dest }}/executor/build_image_buildah.sh"
-  args:
-    chdir: "{{ executor_apimon_repo_dest }}/executor"
+  template:
+    content: "env"
+    dest: "~executor/env"

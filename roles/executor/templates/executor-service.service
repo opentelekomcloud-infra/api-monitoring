@@ -8,15 +8,16 @@ Restart=always
 TimeoutSec=30s
 User=executor
 Group=executor
+EnvironmentFile=~executor/env
 
-# ExecStartPre=-/usr/bin/buildah bud %h/apimon/executor/Dockerfile -t executor ~%h/apimon/executor
 ExecStartPre=-/usr/bin/podman rm executor
 
 ExecStart=/bin/sh -c "/usr/bin/podman run \
   --add-host=telegraf:$(ifconfig $(ip route | awk '/default/ { print $5 }') | grep 'inet ' | awk '{print $2}') \
   --name executor \
+  -e EXECUTOR_REPO_URL=${EXECUTOR_REPO_URL} \
   -v ~executor/.config/openstack:/etc/openstack:ro \
-  executor"
+  opentelekomcloudinfra:task_executor"
 
 ExecReload=-/usr/bin/podman stop executor
 ExecReload=-/usr/bin/podman rm executor
