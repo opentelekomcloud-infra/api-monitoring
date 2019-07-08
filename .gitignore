@@ -6,3 +6,5 @@ __pycache__
 playbooks/install/credentials/*
 *.swp
 *.swo
+*/*.swp
+*/*.swo
