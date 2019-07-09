@@ -1,0 +1,68 @@
+---
+
+- name: Scenario 1 - Authentication Functionality
+  hosts: localhost
+  vars:
+    cloud_name: "{{ 'otc2' }}"
+    user_name: "{{ 'test_user' }}"
+    group_name: "{{ 'test_group' }}"
+    user_password: "{{ 'ApiMon@123' }}"
+    user_email: "{{ 'ApiMon@ApiMon.com' }}"
+
+  tasks:
+    - name: Get Projects Details
+      os_project_facts:
+        cloud: '{{ cloud_name }}'
+
+    - name: List Projects
+      debug:
+        var: openstack_projects
+
+    - name: Get Auth Token
+      os_auth:
+        cloud: '{{ cloud_name }}'
+
+    - name: Create a group
+      os_group:
+        name: '{{ group_name }}'
+        state: present
+        cloud: '{{ cloud_name }}'
+
+    - name: Create a User
+      os_user:
+        name: '{{ user_name }}'
+        password: '{{ user_password }}'
+        email: '{{ user_email }}'
+        description: ApiMon Testing
+        state: present
+        update_password: on_create
+        domain: '{{openstack_projects[0].domain_id}}' 
+        cloud: '{{ cloud_name }}'
+
+    - name: Associate User to the Group
+      os_user_group:
+        user: '{{ user_name }}'
+        group: '{{ group_name }}'
+        cloud: '{{ cloud_name }}'
+
+    - name: Get User Details
+      os_user_facts:
+        name: '{{ user_name }}'
+        cloud: '{{ cloud_name }}'
+
+    - name: Show User Details
+      debug:
+        var: openstack_users
+
+    - name: Delete a User
+      os_user:
+        name: '{{ user_name }}'
+        state: absent
+        domain: '{{openstack_projects[0].domain_id}}' 
+        cloud: '{{ cloud_name }}'
+
+    - name: Delete a group
+      os_group:
+        name: '{{ group_name }}'
+        state: absent
+        cloud: '{{ cloud_name }}'
