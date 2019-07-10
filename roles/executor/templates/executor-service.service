@@ -1,5 +1,5 @@
 [Unit]
-Description=Influx Podman container
+Description=Executor Podman container
 Wants=syslog.service
 
 [Service]
@@ -8,6 +8,7 @@ Restart=always
 TimeoutSec=30s
 User=executor
 Group=executor
+Environment=EXECUTOR_IMAGE=opentelekomcloud/task_executor:latest
 EnvironmentFile=~executor/env
 
 ExecStartPre=-/usr/bin/podman rm executor
@@ -17,7 +18,7 @@ ExecStart=/bin/sh -c "/usr/bin/podman run \
   --name executor \
   -e EXECUTOR_REPO_URL=${EXECUTOR_REPO_URL} \
   -v ~executor/.config/openstack:/etc/openstack:ro \
-  opentelekomcloudinfra:task_executor"
+  ${EXECUTOR_IMAGE}"
 
 ExecReload=-/usr/bin/podman stop -t 120 executor
 ExecReload=-/usr/bin/podman rm executor
