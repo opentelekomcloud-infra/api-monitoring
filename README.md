@@ -26,7 +26,8 @@ The APIMon consists of 4 components:
 ### Prerequisites
 	
  - ansible - should be at least 2.8.1
- - python3-openstacksdk - should be at least 0.26.x
+ - python-openstacksdk - should be at least 0.26.x
+ - python3
 
 ### Inventory
 
