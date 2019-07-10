@@ -13,10 +13,9 @@ Multiple playbooks are using galaxy roles, so it is required to install those.
     ansible-galaxy install -r requirements.yml
 ```
 
-
 ## Installation
 
-The APIMon can be deployed in multiple environments to keep testing from different places (please see [HLD]/docs/design.rst). There is currently a set of playbook, which helps installing APImon on to the OpenStack based platform (what is actually naturaly the scope of the project). If hardware (or VMs for components already exist, or not supported by the infrastructure installation playbooks), infrastructure preparation can be skipped.
+The APIMon can be deployed in multiple environments to keep testing from different places (please see [HLD]/docs/design.rst). There is currently a set of playbook, which helps installing APImon on to the OpenStack based platform (what is actually naturally the scope of the project). If hardware (or VMs for components already exist, or not supported by the infrastructure installation playbooks), infrastructure preparation can be skipped.
 
 The APIMon consists of 4 components:
  - bastion - bastion host for the infrastructure with floating IP
@@ -24,11 +23,11 @@ The APIMon consists of 4 components:
  - influxdb - an InfluxDB instance as a TimeSeries DB
  - grafana - instance of Grafana, which shows gathered metrics
 
-
 ### Prerequisites
 	
  - ansible - should be at least 2.8.1
- - python3-openstacksdk - should be at least 0.26.x
+ - python-openstacksdk - should be at least 0.26.x
+ - python3
 
 ### Inventory
 
