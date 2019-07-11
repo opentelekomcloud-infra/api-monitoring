@@ -110,8 +110,9 @@ An `Executor` component is the core of the system, scheduling continously test
 scenarios written as Ansible playbooks. The scenarios are collected in a Git
 repository and updated in real-time. In general the playbooks do not need take
 care of generating data implicitly. Since the API related tasks in the playbooks
-rely on the [Python OpenStack SDK]() (and its [extension s]()), metric data
-generated automatically by an [logging interface of the SDK](). This mechanism can
+rely on the [Python OpenStack SDK](https://docs.openstack.org/openstacksdk/latest/)
+(and its [extensions](https://python-otcextensions.readthedocs.io/en/latest/)), metric data
+generated automatically by an [logging interface of the SDK](https://github.com/openstack/openstacksdk/commit/c8b96cddd3d65b9b79788d93e72fe499f07ffae0). This mechanism can
 be augmented by other sources and formats. 
 
 The metrics are collected by a `Telegraf` component. It is responsible for
