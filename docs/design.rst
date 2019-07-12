@@ -47,7 +47,8 @@ hard to define, this is a list of criteria the API-monitoring should implement:
 * The checks of the API-monitoring are **easy to write** and use a wide-spread
   language to describe test cases.
 * The checks of the API-monitoring are **easy to extend** and not built in the
-  monitoring itself.
+  monitoring itself. The are outfactored to a separate repository that can be
+  maintained and updated independently from the test infrastructure.
 * The API-monitoring executes realistic user-scenarios, comprising a sequence
   of single steps reflecting actual use cases.
 * The API-monitoring itself is **highly available** even if parts, or the whole
@@ -111,9 +112,10 @@ scenarios written as Ansible playbooks. The scenarios are collected in a Git
 repository and updated in real-time. In general the playbooks do not need take
 care of generating data implicitly. Since the API related tasks in the playbooks
 rely on the [Python OpenStack SDK](https://docs.openstack.org/openstacksdk/latest/)
-(and its [extensions](https://python-otcextensions.readthedocs.io/en/latest/)), metric data
-generated automatically by an [logging interface of the SDK](https://github.com/openstack/openstacksdk/commit/c8b96cddd3d65b9b79788d93e72fe499f07ffae0). This mechanism can
-be augmented by other sources and formats. 
+(and its [extensions](https://python-otcextensions.readthedocs.io/en/latest/)),
+metric data generated automatically by an [logging interface of the
+SDK](https://github.com/openstack/openstacksdk/commit/c8b96cddd3d65b9b79788d93e72fe499f07ffae0).
+This mechanism can be augmented by other sources and formats. 
 
 The metrics are collected by a `Telegraf` component. It is responsible for
 forwarding data to a `InfluxDB` instance, to store it as a time series data.
@@ -173,8 +175,8 @@ Executor
 --------
 
 The `Executor` component of the API-monitoring system is responsible for
-scheduling and executing individual jobs defined as Ansible playbooks in a
-configured repository. It is implemented as a process, which periodically scans
+scheduling and executing individual jobs defined as Ansible playbooks collected
+in an external repository. It is implemented as a process, which periodically scans
 the repository and for each found scenario playbook it forks a process, which
 will endlessly repeat it (probably with some delay, if required). Those
 processes generate metrics in two ways:
