@@ -60,34 +60,34 @@ hard to define, this is a list of criteria the API-monitoring should implement:
 Out of Scope
 ------------
 
-The following items are out of scope (while technically can be addressed):
+The following items are out of scope (while some of them are technically possible):
 
-#. No performance monitoring: The API-monitoring does not measure degradations
-   of performance, unless the performance does not drop under some threshold
-   that is considered as equivalent to non-available. The performance of each
-   individual tested API call is measured and becomes visible in the Grafana,
-   so that evaluation is possible.
-#. No application monitoring: The service availability of applications
+#. **No performance monitoring:** The API-monitoring does not measure degradations
+   of performance per se. So measuring the access times or data transfer rates of
+   an SSD disk is out of scope. However, if the performance of a ressource drops
+   under some threshold that is considered as equivalent to non-available, this is
+   reported.
+#. **No application monitoring:** The service availability of applications
    that run on top of IaaS or PaaS of the cloud is out of scope.
-#. No inside scope: The API-monitoring has no insights and is only uses public
+#. **No view from inside:** The API-monitoring has no insights and is only uses public
    APIs of the monitored cloud. It requires thus no administrative permissions
    on the backend. It can be, however, deployed additionally in the backplane
    to monitor additionally internal APIs.
-#. No synthetic workloads: The service is not simulating workloads on the
-   provisioned resource. It just ensures APIs are working and returning
-   expected results (ensures provisioned resources are really there and
-   accessible), and do not test i.e. performance of the provisioned SSD disks.
+#. **No synthetic workloads:** The service is not simulating any workloads (for
+   example a benchmark suite) on the provisioned resources. Instead it measures
+   and reports only if APIs are available and return expected results with an
+   expected behaviour.
 
 
 Solution Approach and Architecture
 ----------------------------------
 
 The API-Monitoring project permanently supervises the public APIs of an
-OpenStack-based platform. To do that, it constantly sends requests to the API.
+OpenStack-based platform. To do that, it sends requests repeatedly to the API.
 The requests are grouped in so-called scenarios, mimicking real-world use cases.
 These use cases are implemented as Ansible playbooks. This makes it easy to
-extend the APImon for other use cases like provision extra VMs or deploy
-software there.
+extend the APImon for other use cases like monitoring the provisioning of extra
+VMs or deploying extra software.
 
 The actual metrics for the monitoring are collected implicitly; developers of
 scenarios are not required to take care of that. The flow of monitored data
@@ -111,7 +111,7 @@ An `Executor` component is the core of the system, scheduling continously test
 scenarios written as Ansible playbooks. The scenarios are collected in a Git
 repository and updated in real-time. In general the playbooks do not need take
 care of generating data implicitly. Since the API related tasks in the playbooks
-rely on the [Python OpenStack SDK](https://docs.openstack.org/openstacksdk/latest/)
+rely on the `Python OpenStack SDK`_
 (and its [extensions](https://python-otcextensions.readthedocs.io/en/latest/)),
 metric data generated automatically by an [logging interface of the
 SDK](https://github.com/openstack/openstacksdk/commit/c8b96cddd3d65b9b79788d93e72fe499f07ffae0).
@@ -156,19 +156,15 @@ being consumed by a clustered `Grafana` to present the monitoring results.
 
     Schematic Architecture
 
-While it is possible to only perform the testing inside of the platform itself
-(have a VM on the platform, which executes the tests and keeps results on the
-platform), it does not really tests all the APIs, how end customer would do
-that (both from inside and through the internet). There is also additional
-stack of potential issues, which can lead to situations, where platform is
-performing well, when being tested from inside, from outside it can be
-completely unavailable or have other connectivity or performance issues due to
-the misconfiguration of the API gateways or simply internet connectivity. To
-address that it's suggested to perform tests at least in 2 environments: one
-is inside of the platform, and another outside invoking a real internet
-connections. This approach also helps making alerting and the dashboards
-themselves available also in the case of the platform outage (system will be
-most likely not able to inform operations that it is not available).
+The origin of the requests to the APIs affects the availability results. The
+results returned by an API can depend if the request was made inside the cloud
+itself or originates from outside. The API-Monitoring covers thus also
+situations where, when tested from inside, a cloud platform is performing
+well, but appears unavailable when tested from outside the platform over
+the Internet. This is the reason why at least one environment needs to be
+located outside and one inside the monitored cloud platform. This approach
+assures availability of the alerting and the dashboards components even in
+case of a platform outage.
 
 
 Executor
@@ -253,3 +249,7 @@ events should be saved in any kind of database (preferably time-series DB).
 
 Technical Considerations
 ------------------------
+
+
+
+.. _`Python OpenStack SDK`: https://docs.openstack.org/openstacksdk/latest/
