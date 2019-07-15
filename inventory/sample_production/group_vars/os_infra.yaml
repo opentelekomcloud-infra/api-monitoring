@@ -49,10 +49,10 @@ executor_host_security_groups:
 executor_host_network: "{{ influxdb_host_network }}"
 
 
-bastion_host_key_name: ag_nuc_pub
-executor_host_key_name: ag_nuc_pub
-influxdb_host_key_name: ag_nuc_pub
-grafana_host_key_name: ag_nuc_pub
+bastion_host_key_name: apimon_kp
+executor_host_key_name: apimon_kp
+influxdb_host_key_name: apimon_kp
+grafana_host_key_name: apimon_kp
 
 net_name: "{{ (prefix + 'otc-net') }}"
 network: 
