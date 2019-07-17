@@ -9,7 +9,7 @@ TimeoutSec=30s
 User=executor
 Group=executor
 Environment=EXECUTOR_IMAGE=opentelekomcloud/task_executor:latest
-EnvironmentFile=~executor/env
+EnvironmentFile=/home/executor/env
 
 ExecStartPre=-/usr/bin/podman rm executor
 
