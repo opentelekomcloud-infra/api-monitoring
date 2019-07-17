@@ -60,6 +60,7 @@ The next step will be to configure connections and inventory with the newly crea
 ```
    Host apimon-bastion
    HostName 80.158.7.107
+   IdentityFile ~/.ssh/apimon_kp.pem
    User linux
    ControlMaster auto
    ControlPersist 5m
@@ -73,7 +74,7 @@ The next step will be to configure connections and inventory with the newly crea
 When target hosts are present, configured in the inventory the required software can be provisioned there:
 
 ```
-  ansible -i inventory/production playbooks/install/bootstrap.yaml
+  ansible-playbook -i inventory/production playbooks/install/bootstrap.yaml
 ```
 
 

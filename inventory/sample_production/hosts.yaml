@@ -7,11 +7,13 @@ all:
     executor1:
       ansible_host: 192.168.110.60
       ansible_user: linux
+      ansible_ssh_private_key_file: ~/.ssh/apimon_kp.pem
       # Telegraf is running on the same instance
       telegraf_ip: "{{ ansible_host }}"
     influxdb1:
       ansible_host: 192.168.110.141
       ansible_user: linux
+      ansible_ssh_private_key_file: ~/.ssh/apimon_kp.pem
       influxdb_admin_user_name: admin
       # Generate Admin pass, i.e. with "< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-32};echo;"
       influxdb_admin_user_password: fake
@@ -23,6 +25,7 @@ all:
     grafana1:
       ansible_host: 192.168.110.68
       ansible_user: linux
+      ansible_ssh_private_key_file: ~/.ssh/apimon_kp.pem
       grafana_public_ip: "{{ lb_public_ip }}"
   vars:
     ansible_python_interpreter: "/usr/bin/env python3"
