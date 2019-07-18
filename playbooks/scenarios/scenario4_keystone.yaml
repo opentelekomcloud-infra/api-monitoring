@@ -3,7 +3,7 @@
 - name: Scenario 1 - Authentication Functionality
   hosts: localhost
   vars:
-    cloud_name: "{{ 'otc2' }}"
+    cloud_name: "{{ 'otc_domain' }}"
     user_name: "{{ 'test_user' }}"
     group_name: "{{ 'test_group' }}"
     user_password: "{{ 'ApiMon@123' }}"
