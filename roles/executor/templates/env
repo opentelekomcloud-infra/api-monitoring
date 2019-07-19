@@ -1,1 +1,2 @@
-EXECUTOR_REPO_URL={{ apimon_repo_url }}
+EXECUTOR_REPO_URL={{ apimon_repo }}
+EXECUTOR_IMAGE={{ executor_image }}

@@ -1,0 +1,9 @@
+---
+# Deploy Dashboard to grafana
+
+- name: Deploy Dashboard to Grafana
+  hosts: grafana
+  tasks:
+    - include_role:
+        name: grafana
+        tasks_from: provision_dashboard.yaml

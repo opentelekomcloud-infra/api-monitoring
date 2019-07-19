@@ -15,7 +15,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 1,
+  "iteration": 1562607083810,
   "links": [],
   "panels": [
     {
@@ -23,7 +23,8 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "influxdb1-datasource",
+      "datasource": "influxdb1",
+      "description": "Percentile for the response times",
       "fill": 0,
       "gridPos": {
         "h": 8,
@@ -37,23 +38,34 @@
         "alignAsTable": true,
         "avg": true,
         "current": false,
+        "hideEmpty": true,
+        "hideZero": true,
         "max": true,
         "min": true,
         "rightSide": true,
         "show": true,
-        "sideWidth": 450,
+        "sideWidth": 500,
         "total": false,
         "values": true
       },
       "lines": true,
       "linewidth": 1,
       "links": [],
-      "nullPointMode": "null",
+      "nullPointMode": "connected",
       "options": {},
       "percentage": false,
       "pointradius": 2,
-      "points": true,
+      "points": false,
       "renderer": "flot",
+      "repeat": "datasource",
+      "repeatDirection": "h",
+      "scopedVars": {
+        "datasource": {
+          "selected": true,
+          "text": "influxdb1-datasource",
+          "value": "influxdb1-datasource"
+        }
+      },
       "seriesOverrides": [],
       "spaceLength": 10,
       "stack": false,
@@ -64,9 +76,9 @@
           "groupBy": [
             {
               "params": [
-                "service_type"
+                "$resolution"
               ],
-              "type": "tag"
+              "type": "time"
             },
             {
               "params": [
@@ -79,11 +91,20 @@
                 "name"
               ],
               "type": "tag"
+            },
+            {
+              "params": [
+                "service_type"
+              ],
+              "type": "tag"
             }
           ],
+          "hide": false,
           "measurement": "openstack_api",
           "orderByTime": "ASC",
           "policy": "autogen",
+          "query": "SELECT \"duration\" FROM \"autogen\".\"openstack_api\" WHERE $timeFilter GROUP BY \"service_type\", \"name\", \"method\"",
+          "rawQuery": false,
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -93,6 +114,12 @@
                   "duration"
                 ],
                 "type": "field"
+              },
+              {
+                "params": [
+                  95
+                ],
+                "type": "percentile"
               }
             ]
           ],
@@ -141,15 +168,122 @@
       }
     }
   ],
-  "refresh": "",
+  "refresh": "5s",
   "schemaVersion": 18,
   "style": "dark",
   "tags": [],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "current": {
+          "selected": true,
+          "text": "influxdb1-datasource",
+          "value": "influxdb1-datasource"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "influxdb",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "auto": true,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "current": {
+          "text": "auto",
+          "value": "$__auto_interval_resolution"
+        },
+        "hide": 0,
+        "label": null,
+        "name": "resolution",
+        "options": [
+          {
+            "selected": true,
+            "text": "auto",
+            "value": "$__auto_interval_resolution"
+          },
+          {
+            "selected": false,
+            "text": "2s",
+            "value": "2s"
+          },
+          {
+            "selected": false,
+            "text": "5s",
+            "value": "5s"
+          },
+          {
+            "selected": false,
+            "text": "15s",
+            "value": "15s"
+          },
+          {
+            "selected": false,
+            "text": "30s",
+            "value": "30s"
+          },
+          {
+            "selected": false,
+            "text": "1m",
+            "value": "1m"
+          },
+          {
+            "selected": false,
+            "text": "10m",
+            "value": "10m"
+          },
+          {
+            "selected": false,
+            "text": "30m",
+            "value": "30m"
+          },
+          {
+            "selected": false,
+            "text": "1h",
+            "value": "1h"
+          },
+          {
+            "selected": false,
+            "text": "6h",
+            "value": "6h"
+          },
+          {
+            "selected": false,
+            "text": "12h",
+            "value": "12h"
+          },
+          {
+            "selected": false,
+            "text": "1d",
+            "value": "1d"
+          },
+          {
+            "selected": false,
+            "text": "7d",
+            "value": "7d"
+          },
+          {
+            "selected": false,
+            "text": "14d",
+            "value": "14d"
+          }
+        ],
+        "query": "2s,5s,15s,30s,1m,10m,30m,1h,6h,12h,1d,7d,14d",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "type": "interval"
+      }
+    ]
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-12h",
     "to": "now"
   },
   "timepicker": {
@@ -180,5 +314,5 @@
   "timezone": "",
   "title": "APIMonitoring",
   "uid": "cE-RriZZz",
-  "version": 2
+  "version": 14
 }

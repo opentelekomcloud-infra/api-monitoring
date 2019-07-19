@@ -1,12 +1,6 @@
 ---
 # tasks file for roles/executor
 
-- name: install buildah
-  become: true
-  package:
-    name: buildah
-    state: present
-
 - name: Create executor group
   become: yes
   group:
@@ -45,5 +39,15 @@
   become: true
   become_user: executor
   template:
-    content: "env"
+    src: "env"
     dest: "~executor/env"
+
+- name: Enable Executor Systemd service
+  become: true
+  systemd:
+    name: "{{ executor_systemd_service_name }}"
+    enabled: true
+    state: "started"
+    daemon_reload: true
+
+
