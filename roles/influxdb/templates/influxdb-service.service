@@ -9,6 +9,7 @@ TimeoutSec=30s
 EnvironmentFile=/etc/influxdb/env
 
 ExecStartPre=-/usr/bin/podman rm "influxdb"
+ExecStartPre=-/usr/bin/podman system migrate
 
 ExecStart=/usr/bin/podman run \
   --name "influxdb" \
@@ -24,6 +25,7 @@ ExecReload=-/usr/bin/podman stop "influxdb"
 ExecReload=-/usr/bin/podman rm "influxdb"
 
 ExecStop=/usr/bin/podman stop -t 10 "influxdb"
+ExecStop=-/usr/bin/podman rm "influxdb"
 
 [Install]
 WantedBy=multi-user.target

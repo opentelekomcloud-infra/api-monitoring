@@ -16,6 +16,7 @@ Environment=GRAFANA_IMAGE=grafana/grafana:6.2.4
 Environment=ID={{ grafana_user_id }}
 EnvironmentFile=/etc/grafana/env
 
+ExecStartPre=-/usr/bin/podman system migrate
 ExecStartPre=-/usr/bin/podman rm "grafana"
 
 ExecStart=/usr/bin/podman run \
@@ -31,7 +32,8 @@ ExecStart=/usr/bin/podman run \
 ExecReload=-/usr/bin/podman stop "grafana"
 ExecReload=-/usr/bin/podman rm "grafana"
 
-ExecStop=/usr/bin/podman stop -t 10 "grafana"
+ExecStop=/usr/bin/podman stop "grafana"
+ExecStop=/usr/bin/podman rm "grafana"
 
 [Install]
 WantedBy=multi-user.target

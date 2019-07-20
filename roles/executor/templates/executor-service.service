@@ -9,22 +9,24 @@ TimeoutSec=30s
 User=executor
 Group=executor
 Environment=EXECUTOR_IMAGE=opentelekomcloud/task_executor:latest
-EnvironmentFile=~executor/env
+EnvironmentFile=/home/executor/env
 
-ExecStartPre=-/usr/bin/podman rm executor
+ExecStartPre=-/usr/bin/podman rm "executor"
+ExecStartPre=-/usr/bin/podman system migrate
 
 ExecStart=/bin/sh -c "/usr/bin/podman run \
   --add-host=telegraf:$(ifconfig $(ip route | awk '/default/ { print $5 }') | grep 'inet ' | awk '{print $2}') \
   --name executor \
   -e EXECUTOR_REPO_URL=${EXECUTOR_REPO_URL} \
-  -e OS_CLOUD=otc \
+  -e OS_CLOUD=cloud_project_scope \
   -v ~executor/.config/openstack:/etc/openstack:ro \
   ${EXECUTOR_IMAGE}"
 
-ExecReload=-/usr/bin/podman stop -t 120 executor
-ExecReload=-/usr/bin/podman rm executor
+ExecReload=-/usr/bin/podman stop -t 120 "executor"
+ExecReload=-/usr/bin/podman rm "executor"
 
-ExecStop=/usr/bin/podman stop -t 120 executor
+ExecStop=-/usr/bin/podman stop -t 120 "executor"
+ExecStop=-/usr/bin/podman rm "executor"
 
 [Install]
 WantedBy=multi-user.target
