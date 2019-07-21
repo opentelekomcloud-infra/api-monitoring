@@ -8,7 +8,7 @@ Restart=always
 TimeoutSec=30s
 User=executor
 Group=executor
-Environment=EXECUTOR_IMAGE=opentelekomcloud/task_executor:latest
+Environment=EXECUTOR_IMAGE=agoncharov/task_executor
 EnvironmentFile=/home/executor/env
 
 ExecStartPre=-/usr/bin/podman rm executor

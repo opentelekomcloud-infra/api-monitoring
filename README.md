@@ -68,6 +68,10 @@ The next step will be to configure connections and inventory with the newly crea
 
 2. Modify inventory/production/hosts.yaml with IP addresses of the instances. It is also a time to fill the inventory with the proper initial secrets (i.e. for influxdb admin user). One option would be to execute `< /dev/urandom tr -fc _A-Z-a-z-0-9 | head -c${1:-32};echo;`
 
+3. Modify inventory/production/group_vars/all.yaml with EIP address of the Load Balancer Instance. It is also a time to fill the inventory with the SSL certificates for apimon and grafana as well as  openstack credentials for apimonitoring test scenarios.
+
+4. Modify inventory/production/group_vars/grafana.yaml with proper initial secret for grafana admin user. One option would be to execute `< /dev/urandom tr -fc _A-Z-a-z-0-9 | head -c${1:-32};echo;`
+
 
 ### Installation
 
@@ -89,6 +93,7 @@ After bootstrap step it is required to connect influxdb and grafana by executing
 
 In addition current state is that building image on the executor hangs (propably TCPForward connection issue) and Ansible does not recognize, when the process is stopped. So it is required to abort at this step after around 5 minutes (yes, will be fixed ASAP). After that you can manually execute `sudo systemctl start executor-service` on the executor host. As already mentioned dashboard is not provisioned currently, so no data will be visible in grafana.
 
+ - install/deploy_dashboard.yaml - Deploys a default API Monitoring dashboard in Grafana. After running this playbook data will be visible in Grafana
 
 ### Test project creation
 
