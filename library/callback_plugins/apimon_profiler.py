@@ -21,7 +21,7 @@ DOCUMENTATION = '''
           env:
               - name: APIMON_PROFILER_INFLUXDB_MEASUREMENT_NAME
           ini:
-              - section: callback_os_profiler
+              - section: callback_apimon_profiler
                 key: measurement_name
       influxdb_host:
           description: InfluxDB Host
@@ -36,21 +36,21 @@ DOCUMENTATION = '''
           env:
               - name: APIMON_PROFILER_INFLUXDB_PORT
           ini:
-              - section: callback_os_profiles
+              - section: callback_apimon_profiler
                 key: influxdb_port
       influxdb_user:
           description: InfluxDB User name
           env:
               - name: APIMON_PROFILER_INFLUXDB_USER
           ini:
-              - section: callback_os_profiles
+              - section: callback_apimon_profiler
                 key: influxdb_user
       influxdb_password:
           description: InfluxDB User password
           env:
               - name: APIMON_PROFILER_INFLUXDB_PASSWORD
           ini:
-              - section: callback_os_profiles
+              - section: callback_apimon_profiler
                 key: influxdb_password
 
 '''
@@ -156,7 +156,7 @@ class CallbackModule(CallbackBase):
             self.influxdb_password = self.get_option('influxdb_password')
 
             try:
-                self.influx_client = influxdb.InfluxDBClient(
+                self.influxdb_client = influxdb.InfluxDBClient(
                     self.influxdb_host,
                     self.influxdb_port,
                     self.infludb_user,
@@ -254,7 +254,7 @@ class CallbackModule(CallbackBase):
             ),
             fields=dict(
                 duration=int(duration / 1000000),
-                result_code=rc)
+                result_code=int(rc))
         )]
         self._write_data_to_influx(data)
 
@@ -299,6 +299,7 @@ class CallbackModule(CallbackBase):
             data = [dict(
                 measurement=self.measurement_name,
                 tags=dict(
+                    action='playbook_summary',
                     name=self.playbook_name,
                     result_str=rc_str_struct[playbook_rc]
                 ),
@@ -308,7 +309,7 @@ class CallbackModule(CallbackBase):
                     amount_skipped=int(rcs[1]),
                     amount_failed=int(rcs[2]),
                     amount_failed_ignored=int(rcs[3]),
-                    result_code=playbook_rc
+                    result_code=int(playbook_rc)
                 )
             )]
             self._write_data_to_influx(data)
