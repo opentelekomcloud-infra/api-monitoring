@@ -1,0 +1,318 @@
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+# Make coding more python3-ish
+from __future__ import (absolute_import, division, print_function)
+__metaclass__ = type
+
+DOCUMENTATION = '''
+    callback: apimon_profiler
+    type: aggregate
+    short_description: adds time statistics about invoked OpenStack modules
+    version_added: "2.9"
+    description:
+      - Ansible callback plugin for timing individual APImon related tasks and overall execution time.
+    requirements:
+      - whitelist in configuration - see examples section below for details.
+      - influxdb python client for writing metrics to influxdb
+    options:
+      influxdb_measurement:
+          description: InfluxDB measurement name
+          default: 'ansbile_stats'
+          env:
+              - name: APIMON_PROFILER_INFLUXDB_MEASUREMENT_NAME
+          ini:
+              - section: callback_os_profiler
+                key: measurement_name
+      influxdb_host:
+          description: InfluxDB Host
+          env:
+              - name: APIMON_PROFILER_INFLUXDB_HOST
+          ini:
+              - section: callback_os_profiler
+                key: influxdb_host
+      influxdb_port:
+          description: InfluxDB Port
+          default: 8086
+          env:
+              - name: APIMON_PROFILER_INFLUXDB_PORT
+          ini:
+              - section: callback_os_profiles
+                key: influxdb_port
+      influxdb_user:
+          description: InfluxDB User name
+          env:
+              - name: APIMON_PROFILER_INFLUXDB_USER
+          ini:
+              - section: callback_os_profiles
+                key: influxdb_user
+      influxdb_password:
+          description: InfluxDB User password
+          env:
+              - name: APIMON_PROFILER_INFLUXDB_PASSWORD
+          ini:
+              - section: callback_os_profiles
+                key: influxdb_password
+
+'''
+
+EXAMPLES = '''
+example: >
+  To enable, add this to your ansible.cfg file in the defaults block
+    [defaults]
+    callback_whitelist = apimon_profiler
+sample output: >
+Monday 22 July 2019  18:06:55 +0200 (0:00:03.034)       0:00:03.034 ***********
+===============================================================================
+Action=os_auth, state=None duration=1.19, changed=False, name=Get Token
+Action=script, state=None duration=1.48, changed=True, name=List Keypairs
+Overall duration of APImon tasks in playbook playbooks/scenarios/scenaro1_tst.yaml is: 2675.616 ms
+Playbook run took 0 days, 0 hours, 0 minutes, 2 seconds
+
+'''
+
+import collections
+import time
+
+from ansible.module_utils.six.moves import reduce
+from ansible.plugins.callback import CallbackBase
+
+try:
+    import influxdb
+except ImportError:
+    influxdb = None
+
+
+# define start time
+t0 = tn = time.time()
+
+rc_str_struct = {
+    0: 'Passed',
+    1: 'Skipped',
+    2: 'Failed'
+}
+
+
+def secondsToStr(t):
+    # http://bytes.com/topic/python/answers/635958-handy-short-cut-formatting-elapsed-time-floating-point-seconds
+    def rediv(ll, b):
+        return list(divmod(ll[0], b)) + ll[1:]
+
+    return "%d:%02d:%02d.%03d" % tuple(reduce(rediv, [[t * 1000, ], 1000, 60, 60]))
+
+
+def filled(msg, fchar="*"):
+    if len(msg) == 0:
+        width = 79
+    else:
+        msg = "%s " % msg
+        width = 79 - len(msg)
+    if width < 3:
+        width = 3
+    filler = fchar * width
+    return "%s%s " % (msg, filler)
+
+
+def timestamp(self):
+    if self.current is not None:
+        self.stats[self.current]['time'] = time.time() - self.stats[self.current]['time']
+
+
+def tasktime():
+    global tn
+    time_current = time.strftime('%A %d %B %Y  %H:%M:%S %z')
+    time_elapsed = secondsToStr(time.time() - tn)
+    time_total_elapsed = secondsToStr(time.time() - t0)
+    tn = time.time()
+    return filled('%s (%s)%s%s' % (time_current, time_elapsed, ' ' * 7, time_total_elapsed))
+
+
+class CallbackModule(CallbackBase):
+    """
+    This callback module provides per-task timing, ongoing playbook elapsed time
+    and ordered list of top 20 longest running tasks at end.
+    """
+    CALLBACK_VERSION = 2.0
+    CALLBACK_TYPE = 'aggregate'
+    CALLBACK_NAME = 'os_profiler'
+    CALLBACK_NEEDS_WHITELIST = True
+
+    def __init__(self):
+        self.stats = collections.OrderedDict()
+        self.current = None
+        self.playbook_name = None
+        self.influxdb_client = None
+
+        super(CallbackModule, self).__init__()
+
+    def set_options(self, task_keys=None, var_options=None, direct=None):
+
+        super(CallbackModule, self).set_options(task_keys=task_keys, var_options=var_options, direct=direct)
+
+        if influxdb:
+            self.measurement_name = self.get_option('influxdb_measurement')
+            self.influxdb_host = self.get_option('influxdb_host')
+            self.influxdb_port = self.get_option('influxdb_port')
+            self.influxdb_user = self.get_option('influxdb_user')
+            self.influxdb_password = self.get_option('influxdb_password')
+
+            try:
+                self.influx_client = influxdb.InfluxDBClient(
+                    self.influxdb_host,
+                    self.influxdb_port,
+                    self.infludb_user,
+                    self.influxdb_password
+                )
+                self._display.vv('Established InfluxDB connection')
+            except Exception:
+                self._display.warning('Profiler: Cannot establish DB connection')
+        else:
+            self._display.warning('InfluxDB python client is not available')
+
+    def v2_playbook_on_start(self, playbook):
+        if not self.playbook_name:
+            self.playbook_name = playbook._file_name
+
+    def v2_playbook_on_task_start(self, task, is_conditional):
+        play = task._parent._play
+        self._display.vvv('Profiler: task start %s' % (task.dump_attrs()))
+        if (task.action.startswith('os_') or task.action.startswith('otc') or
+                task.action == 'script'):
+            self.current = task._uuid
+            if task.action == 'script' and task.get_name() == 'script':
+                name = task.args.get('_raw_params')
+            else:
+                name = task.get_name()
+            self.stats[self.current] = {
+                'start': time.time_ns(),
+                'name': name,
+                'long_name': '{play}:{name}'.format(
+                    play=play, name=name),
+                'action': task.action,
+                'task': task,
+                'play': task._parent._play.get_name(),
+                'state': task.args.get('state')
+            }
+            if self._display.verbosity >= 2:
+                self.stats[self.current]['path'] = task.get_path()
+        else:
+            self.current = None
+
+    def v2_runner_on_skipped(self, result):
+        # Task was skipped - remove stats
+        if self.current is not None:
+            duration = time.time_ns() - self.stats[self.current]['start']
+            self.stats[self.current].update({
+                'changed': result._result['changed'],
+                'result': result._result,
+                'end': time.time_ns(),
+                'duration': duration,
+                'rc': 1
+            })
+            self.write_metrics_to_influx(self.current, duration, 1)
+
+    def v2_runner_on_ok(self, result):
+        self._display.vvvv('Profiler: result: %s' % result._result)
+        if self.current is not None:
+            duration = time.time_ns() - self.stats[self.current]['start']
+            self.stats[self.current].update({
+                'changed': result._result['changed'],
+                'result': result._result,
+                'end': time.time_ns(),
+                'duration': duration,
+                'rc': 0
+            })
+            self.write_metrics_to_influx(self.current, duration, 0)
+
+    def v2_runner_on_failed(self, result, ignore_errors=False):
+        if self.current is not None:
+            duration = time.time_ns() - self.stats[self.current]['start']
+            rc = 2 if not ignore_errors else 3
+            self.stats[self.current].update({
+                'changed': result._result['changed'],
+                'result': result._result,
+                'end': time.time_ns(),
+                'duration': duration,
+                'rc': rc
+            })
+            self.write_metrics_to_influx(self.current, duration, rc)
+
+    def write_metrics_to_influx(self, task, duration, rc):
+        task_data = self.stats[task]
+        rc_str_struct = {
+            0: 'Passed',
+            1: 'Skipped',
+            2: 'Failed'
+        }
+        data = [dict(
+            measurement=self.measurement_name,
+            tags=dict(
+                action=task_data['action'],
+                play=task_data['play'],
+                long_name=task_data['long_name'],
+                state=task_data['state'],
+                result_str=rc_str_struct[rc]
+            ),
+            fields=dict(
+                duration=int(duration / 1000000),
+                result_code=rc)
+        )]
+        self._write_data_to_influx(data)
+
+    def _write_data_to_influx(self, data):
+        try:
+            self._display.vv('Stats: %s' % data)
+            if self.influxdb_client:
+                self.influxdb_client.write_points(data)
+        except Exception as e:
+            self._display.warning('Profiler: Error writing data to'
+                                  'influxdb: %s' % e)
+
+    def playbook_on_stats(self, stats):
+        self._display.display(tasktime())
+        self._display.display(filled("", fchar="="))
+
+        results = self.stats.items()
+        overall_duration = 0
+        rcs = {
+            0: 0,
+            1: 0,
+            2: 0,
+            3: 0
+        }
+
+        # Print the timings
+        for uuid, result in results:
+            duration = result['duration'] / 1000000
+            overall_duration = overall_duration + duration
+            rcs.update({result['rc']: rcs[result['rc']] + 1})
+            msg = u"Action={0}, state={1} duration={2:.02f}, changed={3}, name={4}".format(
+                    result['action'],
+                    result['state'],
+                    duration/1000,  # MS to Sec
+                    result['changed'],
+                    result['task'].get_name()
+            )
+            self._display.display(msg)
+
+        if self.influxdb_client:
+            playbook_rc = 0 if rcs[2] == 0 else 2
+            data = [dict(
+                measurement=self.measurement_name,
+                tags=dict(
+                    name=self.playbook_name,
+                    result_str=rc_str_struct[playbook_rc]
+                ),
+                fields=dict(
+                    duration=int(overall_duration),
+                    amount_passed=int(rcs[0]),
+                    amount_skipped=int(rcs[1]),
+                    amount_failed=int(rcs[2]),
+                    amount_failed_ignored=int(rcs[3]),
+                    result_code=playbook_rc
+                )
+            )]
+            self._write_data_to_influx(data)
+
+        self._display.display(
+            'Overall duration of APImon tasks in playbook %s is: %s ms' %
+            (self.playbook_name, str(overall_duration)))
