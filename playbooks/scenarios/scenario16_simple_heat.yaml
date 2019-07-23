@@ -15,6 +15,11 @@
         name: "{{ stack_name }}"
         state: absent
 
+    - name: Delete orphaned KP
+      os_keypair:
+        name: "{{ ( prefix + 'test-keypair-apimon') }}"
+        state: absent
+
     - block:
       - name: Create Stack
         os_stack:
