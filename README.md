@@ -49,9 +49,6 @@ Ansible can be used to provision infrastructure on top of the OpenStack, For tha
 
 ```
 metrics:
-  statsd:
-    host: telegraf
-    port: 8125
   influxdb:
     host: telegraf
     port: 8186
