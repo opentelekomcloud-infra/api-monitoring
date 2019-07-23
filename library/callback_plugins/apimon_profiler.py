@@ -76,7 +76,7 @@ import time
 from ansible.module_utils.six.moves import reduce
 from ansible.plugins.callback import CallbackBase
 
-from pathlib import Path
+from pathlib import PurePosixPath
 
 try:
     import influxdb
