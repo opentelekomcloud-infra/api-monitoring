@@ -83,13 +83,14 @@ except ImportError:
 
 
 # define start time
-t0 = tn = time.time()
+t0 = tn = time.time_ns()
+te = 0
 
 rc_str_struct = {
     0: 'Passed',
     1: 'Skipped',
-    3: 'FailedIgnored',
-    2: 'Failed'
+    2: 'FailedIgnored',
+    3: 'Failed'
 }
 
 
@@ -121,9 +122,9 @@ def timestamp(self):
 def tasktime():
     global tn
     time_current = time.strftime('%A %d %B %Y  %H:%M:%S %z')
-    time_elapsed = secondsToStr(time.time() - tn)
-    time_total_elapsed = secondsToStr(time.time() - t0)
-    tn = time.time()
+    time_elapsed = secondsToStr((te - tn)/1000000000)
+    time_total_elapsed = secondsToStr((te - t0)/1000000000)
+    tn = time.time_ns()
     return filled('%s (%s)%s%s' % (time_current, time_elapsed, ' ' * 7, time_total_elapsed))
 
 
@@ -160,12 +161,13 @@ class CallbackModule(CallbackBase):
                 self.influxdb_client = influxdb.InfluxDBClient(
                     self.influxdb_host,
                     self.influxdb_port,
-                    self.infludb_user,
+                    self.influxdb_user,
                     self.influxdb_password
                 )
                 self._display.vv('Established InfluxDB connection')
-            except Exception:
-                self._display.warning('Profiler: Cannot establish DB connection')
+            except Exception as e:
+                self._display.warning('Profiler: Cannot establish DB '
+                                      'connection: %s' % e)
         else:
             self._display.warning('InfluxDB python client is not available')
 
@@ -173,11 +175,17 @@ class CallbackModule(CallbackBase):
         if not self.playbook_name:
             self.playbook_name = playbook._file_name
 
+    def is_task_interesting(self, task):
+        return (
+            task.action.startswith('os_') or
+            task.action.startswith('otc') or
+            task.action == 'script' or
+            task.action == 'wait_for_connection')
+
     def v2_playbook_on_task_start(self, task, is_conditional):
         play = task._parent._play
         self._display.vvv('Profiler: task start %s' % (task.dump_attrs()))
-        if (task.action.startswith('os_') or task.action.startswith('otc') or
-                task.action == 'script'):
+        if self.is_task_interesting(task):
             self.current = task._uuid
             if task.action == 'script' and task.get_name() == 'script':
                 name = task.args.get('_raw_params')
@@ -227,7 +235,7 @@ class CallbackModule(CallbackBase):
     def v2_runner_on_failed(self, result, ignore_errors=False):
         if self.current is not None:
             duration = time.time_ns() - self.stats[self.current]['start']
-            rc = 2 if not ignore_errors else 3
+            rc = 3 if not ignore_errors else 2
             self.stats[self.current].update({
                 'changed': result._result['changed'],
                 'result': result._result,
@@ -264,11 +272,13 @@ class CallbackModule(CallbackBase):
                                   'influxdb: %s' % e)
 
     def playbook_on_stats(self, stats):
+        global te, t0
+        te = time.time_ns()
         self._display.display(tasktime())
         self._display.display(filled("", fchar="="))
 
         results = self.stats.items()
-        overall_duration = 0
+        overall_apimon_duration = 0
         rcs = {
             0: 0,
             1: 0,
@@ -279,7 +289,7 @@ class CallbackModule(CallbackBase):
         # Print the timings
         for uuid, result in results:
             duration = result['duration'] / 1000000
-            overall_duration = overall_duration + duration
+            overall_apimon_duration = overall_apimon_duration + duration
             rcs.update({result['rc']: rcs[result['rc']] + 1})
             msg = u"Action={0}, state={1} duration={2:.02f}, changed={3}, name={4}".format(
                     result['action'],
@@ -291,7 +301,7 @@ class CallbackModule(CallbackBase):
             self._display.display(msg)
 
         if self.influxdb_client:
-            playbook_rc = 0 if rcs[2] == 0 else 2
+            playbook_rc = 0 if rcs[3] == 0 else 3
             data = [dict(
                 measurement=self.measurement_name,
                 tags=dict(
@@ -300,7 +310,8 @@ class CallbackModule(CallbackBase):
                     result_str=rc_str_struct[playbook_rc]
                 ),
                 fields=dict(
-                    duration=int(overall_duration),
+                    duration=int((te-t0)/1000000),
+                    apimon_duration=int(overall_apimon_duration),
                     amount_passed=int(rcs[0]),
                     amount_skipped=int(rcs[1]),
                     amount_failed=int(rcs[2]),
@@ -312,4 +323,4 @@ class CallbackModule(CallbackBase):
 
         self._display.display(
             'Overall duration of APImon tasks in playbook %s is: %s ms' %
-            (self.playbook_name, str(overall_duration)))
+            (self.playbook_name, str(overall_apimon_duration)))
