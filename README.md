@@ -47,6 +47,31 @@ Inventory consists of following components:
 
 Ansible can be used to provision infrastructure on top of the OpenStack, For that a proper cloud connection should be present on the management host (presumably localhost) - clouds.yaml
 
+```
+metrics:
+  statsd:
+    host: telegraf
+    port: 8125
+  influxdb:
+    host: telegraf
+    port: 8186
+    username: foobar
+    password: barfoo
+    measurement: openstack_api
+clouds:
+  otc:
+    auth:
+      auth_url: https://iam.eu-de.otc.t-systems.com:443/v3
+      project_name: PROJECTNAME #required, since otherwise some APIs are not working
+      user_domain_name: USERDOMAINNAME
+      username: USERNAME
+      password: PASSWORD
+    interface: public
+    identity_api_version: 3
+    volume_service_type: volumev3
+    block_store_api_version: 3
+```
+File clouds.yaml can be stored in ~/.config/openstack . Section 'metrics' on the localhost is needed only when you are using developer setup (read at the end of the README).
 
 ```
     ansible-playbook -i inventory/production playbooks/install/provision_infra.yaml
