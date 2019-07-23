@@ -10,8 +10,11 @@ conn = openstack.connect()
 #Until ES150 is completed this query can be done only in old way
 #backups = list(conn.block_storage.backups(name=sys.argv[1]))
 backups = list(conn.block_storage.backups())
-backup = [detail for detail in backups if detail.name == sys.argv[1]]
-backup =  next(iter(backup),None)
-backup_id = backup.id
-
-backup = conn.block_storage.delete_backup(backup_id)
+backup_found = False
+for backup in conn.block_storage.backups():
+    if backup.name == sys.argv[1]:
+        if backup_found:
+            print('Backup with this name was already found, potentially'
+                  'multiple')
+        backup_found = True
+        conn.block_storage.delete_backup(backup.id)
