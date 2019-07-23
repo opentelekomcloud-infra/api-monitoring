@@ -28,7 +28,7 @@ DOCUMENTATION = '''
           env:
               - name: APIMON_PROFILER_INFLUXDB_HOST
           ini:
-              - section: callback_os_profiler
+              - section: callback_apimon_profiler
                 key: influxdb_host
       influxdb_port:
           description: InfluxDB Port
@@ -88,6 +88,7 @@ t0 = tn = time.time()
 rc_str_struct = {
     0: 'Passed',
     1: 'Skipped',
+    3: 'FailedIgnored',
     2: 'Failed'
 }
 
@@ -238,11 +239,6 @@ class CallbackModule(CallbackBase):
 
     def write_metrics_to_influx(self, task, duration, rc):
         task_data = self.stats[task]
-        rc_str_struct = {
-            0: 'Passed',
-            1: 'Skipped',
-            2: 'Failed'
-        }
         data = [dict(
             measurement=self.measurement_name,
             tags=dict(
