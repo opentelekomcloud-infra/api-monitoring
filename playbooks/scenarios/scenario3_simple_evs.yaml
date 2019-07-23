@@ -11,7 +11,8 @@
     - name: List Volumes
       script: list_volumes.py
 
-    - block:
+    - name: Rescue block
+      block:
 
       - name: Create Volume
         os_volume:
@@ -55,7 +56,7 @@
           state: absent
           display_name: "{{volume_name}}"
 
-    - rescue:
+    rescue:
       # If we failed - cleanup what we can
       - name: Delete backup
         script: "delete_backup.py {{backup_name}}"
