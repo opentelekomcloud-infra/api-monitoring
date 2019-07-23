@@ -76,6 +76,8 @@ import time
 from ansible.module_utils.six.moves import reduce
 from ansible.plugins.callback import CallbackBase
 
+from pathlib import Path
+
 try:
     import influxdb
 except ImportError:
@@ -183,6 +185,7 @@ class CallbackModule(CallbackBase):
             task.action == 'wait_for_connection')
 
     def v2_playbook_on_task_start(self, task, is_conditional):
+        self._display.display('task name is %s' % task.get_name())
         play = task._parent._play
         self._display.vvv('Profiler: task start %s' % (task.dump_attrs()))
         if self.is_task_interesting(task):
@@ -252,6 +255,7 @@ class CallbackModule(CallbackBase):
             tags=dict(
                 action=task_data['action'],
                 play=task_data['play'],
+                name=task_data['name'],
                 long_name=task_data['long_name'],
                 state=task_data['state'],
                 result_str=rc_str_struct[rc]
@@ -306,7 +310,7 @@ class CallbackModule(CallbackBase):
                 measurement=self.measurement_name,
                 tags=dict(
                     action='playbook_summary',
-                    name=self.playbook_name,
+                    name=PurePosixPath(self.playbook_name).name,
                     result_str=rc_str_struct[playbook_rc]
                 ),
                 fields=dict(
