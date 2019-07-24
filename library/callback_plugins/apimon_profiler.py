@@ -185,7 +185,6 @@ class CallbackModule(CallbackBase):
             task.action == 'wait_for_connection')
 
     def v2_playbook_on_task_start(self, task, is_conditional):
-        self._display.display('task name is %s' % task.get_name())
         play = task._parent._play
         self._display.vvv('Profiler: task start %s' % (task.dump_attrs()))
         if self.is_task_interesting(task):
