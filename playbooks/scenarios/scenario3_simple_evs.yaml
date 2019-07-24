@@ -8,6 +8,8 @@
 
     - set_fact:
         prefix: "{{ ('test-scenario3-' + uuid.stdout) }}"
+
+    - set_fact:
         volume_name: "{{ (prefix + '-test_volume_apimon') }}"
         snapshot_name: "{{ (prefix + '-test_snapshot_apimon') }}"
         backup_name: "{{ (prefix + '-test_backup_apimon') }}"

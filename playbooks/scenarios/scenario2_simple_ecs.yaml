@@ -2,14 +2,14 @@
 
 - name: Scenario 2 - basic compute functionality
   hosts: localhost
-  vars:
-    prefix: test-scenario2-
   tasks:
     - command: uuidgen
       register: uuid
 
     - set_fact:
         prefix: "{{ ('test-scenario2-' + uuid.stdout) }}"
+
+    - set_fact:
         test_server_fqdn: "{{ (prefix + '.host') }}"
         test_security_group_name: "{{ (prefix + '-sg') }}"
         test_keypair_name: "{{ (prefix + '-kp') }}"
@@ -19,6 +19,11 @@
 
     - name: List Keypairs
       script: list_keypairs.py
+
+    - name: Ensure .ssh exists
+      file:
+        path: "~/.ssh"
+        state: directory
 
     - name: Create Keypair
       include_role:
