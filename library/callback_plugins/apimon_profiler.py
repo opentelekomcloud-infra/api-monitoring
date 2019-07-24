@@ -193,7 +193,7 @@ class CallbackModule(CallbackBase):
                 name = task.args.get('_raw_params')
             else:
                 name = task.get_name()
-            self.stats[self.current] = {
+            stat_args = {
                 'start': time.time_ns(),
                 'name': name,
                 'long_name': '{play}:{name}'.format(
@@ -203,6 +203,12 @@ class CallbackModule(CallbackBase):
                 'play': task._parent._play.get_name(),
                 'state': task.args.get('state')
             }
+            az = task.args.get('availability_zone')
+
+            if az:
+                stat_args['az'] = az
+
+            self.stats[self.current] = stat_args
             if self._display.verbosity >= 2:
                 self.stats[self.current]['path'] = task.get_path()
         else:
@@ -249,16 +255,19 @@ class CallbackModule(CallbackBase):
 
     def write_metrics_to_influx(self, task, duration, rc):
         task_data = self.stats[task]
+        tags=dict(
+            action=task_data['action'],
+            play=task_data['play'],
+            name=task_data['name'],
+            long_name=task_data['long_name'],
+            state=task_data['state'],
+            result_str=rc_str_struct[rc]
+        )
+        if task_data['az']:
+            tags['az'] = task_data['az']
         data = [dict(
             measurement=self.measurement_name,
-            tags=dict(
-                action=task_data['action'],
-                play=task_data['play'],
-                name=task_data['name'],
-                long_name=task_data['long_name'],
-                state=task_data['state'],
-                result_str=rc_str_struct[rc]
-            ),
+            tags=tags,
             fields=dict(
                 duration=int(duration / 1000000),
                 result_code=int(rc))
