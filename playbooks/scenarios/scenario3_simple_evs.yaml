@@ -2,12 +2,16 @@
 
 - name: Scenario 3 - basic storage functionality
   hosts: localhost
-  vars:
-    prefix: test-scenario3-
-    volume_name: "{{ (prefix + 'test_volume_apimon') }}"
-    snapshot_name: "{{ (prefix + 'test_snapshot_apimon') }}"
-    backup_name: "{{ (prefix + 'test_backup_apimon') }}"
   tasks:
+    - command: uuidgen
+      register: uuid
+
+    - set_fact:
+        prefix: "{{ ('test-scenario3-' + uuid.stdout) }}"
+        volume_name: "{{ (prefix + '-test_volume_apimon') }}"
+        snapshot_name: "{{ (prefix + '-test_snapshot_apimon') }}"
+        backup_name: "{{ (prefix + '-test_backup_apimon') }}"
+  
     - name: List Volumes
       script: list_volumes.py
 
