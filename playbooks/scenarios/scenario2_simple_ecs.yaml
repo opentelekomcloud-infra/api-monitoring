@@ -3,11 +3,8 @@
 - name: Scenario 2 - basic compute functionality
   hosts: localhost
   tasks:
-    - command: uuidgen
-      register: uuid
-
     - set_fact:
-        prefix: "{{ ('test-scenario2-' + uuid.stdout) }}"
+        prefix: "{{ ('test-scenario2-' + (99999999 | random | to_uuid | hash('md5'))) }}"
 
     - set_fact:
         test_server_fqdn: "{{ (prefix + '.host') }}"
