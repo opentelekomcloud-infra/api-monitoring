@@ -11,8 +11,8 @@
     - set_fact:
         prefix: "{{ ('test-scenario2-' + uuid.stdout) }}"
         test_server_fqdn: "{{ (prefix + '.host') }}"
-        test_security_group_name: "{{ (prefix + '-sg' }}"
-        test_keypair_name: "{{ (prefix + '-kp'}}"
+        test_security_group_name: "{{ (prefix + '-sg') }}"
+        test_keypair_name: "{{ (prefix + '-kp') }}"
 
     - debug:
         msg: "Using prefix {{ prefix }}"
