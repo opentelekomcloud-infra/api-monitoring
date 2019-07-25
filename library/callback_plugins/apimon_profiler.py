@@ -263,7 +263,7 @@ class CallbackModule(CallbackBase):
             state=task_data['state'],
             result_str=rc_str_struct[rc]
         )
-        if task_data['az']:
+        if 'az' in task_data:
             tags['az'] = task_data['az']
         data = [dict(
             measurement=self.measurement_name,
