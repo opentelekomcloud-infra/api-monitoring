@@ -14,4 +14,4 @@ for backup in conn.block_storage.backups():
                   'multiple')
         backup_found = True
         conn.block_storage.delete_backup(backup.id)
-        conn.block_storage.wait_for_delete(backup, interval=2, wait=120)
+        conn.block_storage.wait_for_delete(backup, interval=2, wait=300)

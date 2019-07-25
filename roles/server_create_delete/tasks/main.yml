@@ -25,7 +25,7 @@
     server_ip: "{{ openstack_servers[0]['public_v4'] }}"
 
 # Wait for the server to really start and become accessible
-- name: Check connectivity to the bastion server
+- name: Check SSH to the server
   wait_for:
     port: 22
     host: "{{ server_ip }}"

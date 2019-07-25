@@ -14,12 +14,12 @@ if not name_contains:
 for res in conn.block_storage.backups():
     if name_contains in res.name:
         conn.block_storage.delete_backup(res.id)
-        conn.block_storage.wait_for_delete(res)
+        conn.block_storage.wait_for_delete(res, timeout=300)
 
-for res in conn.block_storage.snapshots():
-    if name_contains in res.name:
-        conn.block_storage.delete_snapshot(res.id)
-        conn.block_storage.wait_for_delete(res)
+# for res in conn.block_storage.snapshots():
+#     if name_contains in res.name:
+#         conn.block_storage.delete_snapshot(res.id)
+#         conn.block_storage.wait_for_delete(res)
 
 for res in conn.block_storage.volumes():
     if name_contains in res.name:
