@@ -191,7 +191,8 @@ class CallbackModule(CallbackBase):
             task.action.startswith('os_') or
             task.action.startswith('otc') or
             task.action == 'script' or
-            task.action == 'wait_for_connection')
+            task.action == 'wait_for_connection' or
+            task.action == 'wait_for')
 
     def v2_playbook_on_task_start(self, task, is_conditional):
         play = task._parent._play
