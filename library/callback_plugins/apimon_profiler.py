@@ -12,7 +12,7 @@ DOCUMENTATION = '''
     version_added: "2.9"
     description:
       - Ansible callback plugin for timing individual APImon related tasks and
-      overall execution time.
+        overall execution time.
     requirements:
       - whitelist in configuration - see examples section below for details.
       - influxdb python client for writing metrics to influxdb
