@@ -2,9 +2,11 @@
 
 - name: Scenario 2 - basic compute functionality
   hosts: localhost
+  vars:
+    prefix: scenario2-
   tasks:
     - set_fact:
-        prefix: "{{ ('test-scenario2-' + (99999999 | random | to_uuid | hash('md5'))) }}"
+        prefix: "{{ (prefix + ( lookup('env', 'TASK_EXECUTOR_JOB_ID') | default(99999999 | random | to_uuid | hash('md5'), true) ) ) }}"
 
     - set_fact:
         test_server_fqdn: "{{ (prefix + '.host') }}"
