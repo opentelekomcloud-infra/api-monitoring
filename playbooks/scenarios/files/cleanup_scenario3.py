@@ -11,15 +11,15 @@ name_contains = sys.argv[1]
 if not name_contains:
     sys.exit(1)
 
-for res in conn.compute.servers():
+for res in conn.block_storage.backups():
     if name_contains in res.name:
-        conn.compute.delete_server(res.id)
-        conn.compute.wait_for_delete(res)
+        conn.block_storage.delete_backup(res.id)
+        conn.block_storage.wait_for_delete(res)
 
-for res in conn.network.security_groups():
+for res in conn.block_storage.snapshots():
     if name_contains in res.name:
-        conn.network.delete_security_grouip(res.id)
-        conn.network.wait_for_delete(res)
+        conn.block_storage.delete_snapshot(res.id)
+        conn.block_storage.wait_for_delete(res)
 
 for res in conn.block_storage.volumes():
     if name_contains in res.name:
