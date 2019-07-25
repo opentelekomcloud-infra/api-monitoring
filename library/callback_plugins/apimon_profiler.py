@@ -1,4 +1,5 @@
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 # Make coding more python3-ish
 from __future__ import (absolute_import, division, print_function)
@@ -10,7 +11,8 @@ DOCUMENTATION = '''
     short_description: adds time statistics about invoked OpenStack modules
     version_added: "2.9"
     description:
-      - Ansible callback plugin for timing individual APImon related tasks and overall execution time.
+      - Ansible callback plugin for timing individual APImon related tasks and
+      overall execution time.
     requirements:
       - whitelist in configuration - see examples section below for details.
       - influxdb python client for writing metrics to influxdb
@@ -65,13 +67,15 @@ Monday 22 July 2019  18:06:55 +0200 (0:00:03.034)       0:00:03.034 ***********
 ===============================================================================
 Action=os_auth, state=None duration=1.19, changed=False, name=Get Token
 Action=script, state=None duration=1.48, changed=True, name=List Keypairs
-Overall duration of APImon tasks in playbook playbooks/scenarios/scenaro1_tst.yaml is: 2675.616 ms
+Overall duration of APImon tasks in playbook playbooks/scenarios/sc1_tst.yaml
+    is: 2675.616 ms
 Playbook run took 0 days, 0 hours, 0 minutes, 2 seconds
 
 '''
 
 import collections
 import time
+import os
 
 from ansible.module_utils.six.moves import reduce
 from ansible.plugins.callback import CallbackBase
@@ -101,7 +105,8 @@ def secondsToStr(t):
     def rediv(ll, b):
         return list(divmod(ll[0], b)) + ll[1:]
 
-    return "%d:%02d:%02d.%03d" % tuple(reduce(rediv, [[t * 1000, ], 1000, 60, 60]))
+    return "%d:%02d:%02d.%03d" % tuple(
+        reduce(rediv, [[t * 1000, ], 1000, 60, 60]))
 
 
 def filled(msg, fchar="*"):
@@ -118,7 +123,8 @@ def filled(msg, fchar="*"):
 
 def timestamp(self):
     if self.current is not None:
-        self.stats[self.current]['time'] = time.time() - self.stats[self.current]['time']
+        self.stats[self.current]['time'] = time.time() - \
+                self.stats[self.current]['time']
 
 
 def tasktime():
@@ -127,13 +133,14 @@ def tasktime():
     time_elapsed = secondsToStr((te - tn)/1000000000)
     time_total_elapsed = secondsToStr((te - t0)/1000000000)
     tn = time.time_ns()
-    return filled('%s (%s)%s%s' % (time_current, time_elapsed, ' ' * 7, time_total_elapsed))
+    return filled('%s (%s)%s%s' %
+                  (time_current, time_elapsed, ' ' * 7, time_total_elapsed))
 
 
 class CallbackModule(CallbackBase):
     """
-    This callback module provides per-task timing, ongoing playbook elapsed time
-    and ordered list of top 20 longest running tasks at end.
+    This callback module provides per-task timing, ongoing playbook elapsed
+    time and ordered list of top 20 longest running tasks at end.
     """
     CALLBACK_VERSION = 2.0
     CALLBACK_TYPE = 'aggregate'
@@ -150,7 +157,9 @@ class CallbackModule(CallbackBase):
 
     def set_options(self, task_keys=None, var_options=None, direct=None):
 
-        super(CallbackModule, self).set_options(task_keys=task_keys, var_options=var_options, direct=direct)
+        super(CallbackModule, self).set_options(task_keys=task_keys,
+                                                var_options=var_options,
+                                                direct=direct)
 
         if influxdb:
             self.measurement_name = self.get_option('influxdb_measurement')
@@ -255,7 +264,7 @@ class CallbackModule(CallbackBase):
 
     def write_metrics_to_influx(self, task, duration, rc):
         task_data = self.stats[task]
-        tags=dict(
+        tags = dict(
             action=task_data['action'],
             play=task_data['play'],
             name=task_data['name'],
@@ -263,14 +272,19 @@ class CallbackModule(CallbackBase):
             state=task_data['state'],
             result_str=rc_str_struct[rc]
         )
+        fields = dict(
+            duration=int(duration / 1000000),
+            result_code=int(rc)
+        )
         if 'az' in task_data:
             tags['az'] = task_data['az']
+        job_id = os.getenv('TASK_EXECUTOR_JOB_ID')
+        if job_id:
+            fields['job_id'] = job_id
         data = [dict(
             measurement=self.measurement_name,
             tags=tags,
-            fields=dict(
-                duration=int(duration / 1000000),
-                result_code=int(rc))
+            fields=fields
         )]
         self._write_data_to_influx(data)
 
@@ -303,13 +317,14 @@ class CallbackModule(CallbackBase):
             duration = result['duration'] / 1000000
             overall_apimon_duration = overall_apimon_duration + duration
             rcs.update({result['rc']: rcs[result['rc']] + 1})
-            msg = u"Action={0}, state={1} duration={2:.02f}, changed={3}, name={4}".format(
+            msg = u"Action={0}, state={1} duration={2:.02f}, " \
+                  u"changed={3}, name={4}".format(
                     result['action'],
                     result['state'],
                     duration/1000,  # MS to Sec
                     result['changed'],
                     result['task'].get_name()
-            )
+                  )
             self._display.display(msg)
 
         if self.influxdb_client:
@@ -328,7 +343,8 @@ class CallbackModule(CallbackBase):
                     amount_skipped=int(rcs[1]),
                     amount_failed=int(rcs[2]),
                     amount_failed_ignored=int(rcs[3]),
-                    result_code=int(playbook_rc)
+                    result_code=int(playbook_rc),
+                    job_id=os.getenv('TASK_EXECUTOR_JOB_ID')
                 )
             )]
             self._write_data_to_influx(data)
