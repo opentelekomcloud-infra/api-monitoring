@@ -13,6 +13,9 @@
         volume_name: "{{ (prefix + '-test_volume_apimon') }}"
         snapshot_name: "{{ (prefix + '-test_snapshot_apimon') }}"
         backup_name: "{{ (prefix + '-test_backup_apimon') }}"
+
+    - name: pre-cleanup
+      script: cleanup_scenario3.py 'test-scenario3-'
   
     - name: List Volumes
       script: list_volumes.py
