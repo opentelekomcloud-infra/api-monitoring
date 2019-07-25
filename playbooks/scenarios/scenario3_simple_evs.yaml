@@ -13,8 +13,8 @@
         snapshot_name: "{{ (prefix + '-test_snapshot_apimon') }}"
         backup_name: "{{ (prefix + '-test_backup_apimon') }}"
 
-    - name: pre-cleanup
-      script: cleanup_scenario3.py 'scenario3-'
+        #     - name: pre-cleanup
+        #       script: cleanup_scenario3.py 'scenario3-'
   
     - name: List Volumes
       script: list_volumes.py
