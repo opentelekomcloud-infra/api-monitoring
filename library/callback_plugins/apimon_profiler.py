@@ -252,7 +252,6 @@ class CallbackModule(CallbackBase):
     def _update_task_stats(self, result, rc):
         if self.current is not None:
             duration = time.time_ns() - self.stats[self.current]['start']
-            self._display.display('result is %s' % result._result)
 
             invoked_args = result._result.get('invocation')
             attrs = {
