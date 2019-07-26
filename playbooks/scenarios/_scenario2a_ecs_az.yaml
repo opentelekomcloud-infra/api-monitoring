@@ -22,8 +22,10 @@
     - block:
   
       - name: Create Keypair
-        os_keypair:
-          name: "{{ test_keypair_name }}"
+        include_role:
+          name: opentelekomcloud.keypair
+        vars:
+          keypair_name: "{{ test_keypair_name }}"
 
       - name: Create VPC
         include_role:
@@ -76,7 +78,10 @@
           state: absent
 
       - name: Delete KP
-        os_keypair:
-          name: "{{ test_keypair_name }}"
+        include_role:
+          name: opentelekomcloud.keypair
+        vars:
+          keypair_name: "{{ test_keypair_name }}"
           state: absent
+          force_delete_keypair: true
 
