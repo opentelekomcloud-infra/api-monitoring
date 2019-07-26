@@ -352,7 +352,6 @@ class CallbackModule(CallbackBase):
             for (host, val) in stats.rescued.items():
                 if val:
                     rescued += val
-            self._display.display('stats: %s' % rescued)
             playbook_rc = 0 if (rcs[3] == 0 and rescued == 0) else 3
             data = [dict(
                 measurement=self.measurement_name,
