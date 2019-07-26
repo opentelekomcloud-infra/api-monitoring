@@ -44,6 +44,13 @@
           port_range_max: 22
           remote_ip_prefix: 0.0.0.0/0
 
+      - name: Get network facts
+        os_networks_facts:
+          name: "{{ test_network_name }}"
+
+      - set_fact:
+          network_azs: "{{ openstack_networks[0]]'availability_zones'] }}"
+
       - name: "Create server in {{item}}"
         include_role:
           name: server_create_delete 
@@ -55,11 +62,7 @@
           server_net: "{{ test_network_name }}"
           security_group: "{{ test_security_group_name }}"
           availability_zone: "{{ item }}"
-        loop:
-          # TODO: replace with list of AZs from the net
-          - eu-de-01
-          - eu-de-02
-          - eu-de-02
+        loop: "{{ network_azs }}"
    
       - name: Delete SG
         os_security_group:
