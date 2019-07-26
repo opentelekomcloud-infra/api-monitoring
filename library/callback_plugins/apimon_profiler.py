@@ -263,8 +263,9 @@ class CallbackModule(CallbackBase):
             }
             if (isinstance(invoked_args, dict)
                     and 'module_args' in invoked_args):
-                if 'availability_zone' in invoked_args.get('module_args'):
-                    attrs['az'] = invoked_args['availability_zone']
+                module_args = invoked_args.get('module_args')
+                if 'availability_zone' in module_args:
+                    attrs['az'] = module_args.get('availability_zone')
 
             self.stats[self.current].update(attrs)
 
