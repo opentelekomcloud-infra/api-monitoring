@@ -54,6 +54,15 @@ DOCUMENTATION = '''
           ini:
               - section: callback_apimon_profiler
                 key: influxdb_password
+      use_last_name_segment:
+          description: Use only last part of the name after colon sign as name
+          default: True
+          type: boolean
+          env:
+              - name: APIMON_PROFILER_USE_LAST_NAME_SEGMENT
+          ini:
+              - section: callback_apimon_profiler
+                key: use_last_name_segment
 
 '''
 
@@ -182,6 +191,8 @@ class CallbackModule(CallbackBase):
         else:
             self._display.warning('InfluxDB python client is not available')
 
+        self.use_last_name_segment = self.get_option('use_last_name_segment')
+
     def v2_playbook_on_start(self, playbook):
         if not self.playbook_name:
             self.playbook_name = playbook._file_name
@@ -201,6 +212,11 @@ class CallbackModule(CallbackBase):
                 name = task.args.get('_raw_params')
             else:
                 name = task.get_name()
+            if self.use_last_name_segment and ':' in name:
+                # When we invoke role - it's name is part of the name.
+                # Just take the last segment after ':'
+                name_parts = name.split(':')
+                name = name_parts[-1].strip()
             stat_args = {
                 'start': time.time_ns(),
                 'name': name,
@@ -327,7 +343,12 @@ class CallbackModule(CallbackBase):
             self._display.display(msg)
 
         if self.influxdb_client:
-            playbook_rc = 0 if rcs[3] == 0 else 3
+            rescued = 0
+            for (host, val) in stats.rescued.items():
+                if val:
+                    rescued += val
+            self._display.display('stats: %s' % rescued)
+            playbook_rc = 0 if (rcs[3] == 0 and rescued == 0) else 3
             data = [dict(
                 measurement=self.measurement_name,
                 tags=dict(
