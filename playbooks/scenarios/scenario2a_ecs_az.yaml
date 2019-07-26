@@ -51,7 +51,7 @@
           name: "{{ test_network_name }}"
 
       - set_fact:
-          network_azs: "{{ openstack_networks[0]]'availability_zones'] }}"
+          network_azs: "{{ openstack_networks[0]['availability_zones'] }}"
 
       - name: "Create server in {{item}}"
         include_role:
@@ -85,3 +85,23 @@
           state: absent
           force_delete_keypair: true
 
+      rescue:
+        # do something here
+        - name: Delete SG
+          os_security_group:
+            name: "{{ test_security_group_name }}"
+            state: absent
+  
+        - name: Delete VPC
+          include_role:
+            name: opentelekomcloud.vpc
+          vars:
+            state: absent
+  
+        - name: Delete KP
+          include_role:
+            name: opentelekomcloud.keypair
+          vars:
+            keypair_name: "{{ test_keypair_name }}"
+            state: absent
+            force_delete_keypair: true

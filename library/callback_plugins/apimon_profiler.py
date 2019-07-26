@@ -87,6 +87,7 @@ import time
 import os
 
 from ansible.module_utils.six.moves import reduce
+from ansible.module_utils._text import to_text
 from ansible.plugins.callback import CallbackBase
 
 from pathlib import PurePosixPath
@@ -201,9 +202,12 @@ class CallbackModule(CallbackBase):
         return (
             task.action.startswith('os_') or
             task.action.startswith('otc') or
-            task.action in ('script', 'wait_for_connection', 'wait_for'))
+            task.action in ('script', 'command',
+                            'wait_for_connection', 'wait_for'))
 
     def v2_playbook_on_task_start(self, task, is_conditional):
+        # NOTE(gtema): used attrs might be jinjas, so probably
+        # need to update value with the invokation values
         play = task._parent._play
         self._display.vvv('Profiler: task start %s' % (task.dump_attrs()))
         if self.is_task_interesting(task):
@@ -229,8 +233,15 @@ class CallbackModule(CallbackBase):
             }
             az = task.args.get('availability_zone')
 
+            for tag in task.tags:
+                # Look for tags on interesting tags
+                if 'az=' == tag[:3] and not az:
+                    # AZ is not available on task, but we want
+                    # to bind them
+                    az = tag[3:]
+
             if az:
-                stat_args['az'] = az
+                stat_args['az'] = to_text(az)
 
             self.stats[self.current] = stat_args
             if self._display.verbosity >= 2:
@@ -238,44 +249,35 @@ class CallbackModule(CallbackBase):
         else:
             self.current = None
 
-    def v2_runner_on_skipped(self, result):
-        # Task was skipped - remove stats
+    def _update_task_stats(self, result, rc):
         if self.current is not None:
             duration = time.time_ns() - self.stats[self.current]['start']
-            self.stats[self.current].update({
-                'changed': result._result['changed'],
-                'result': result._result,
-                'end': time.time_ns(),
-                'duration': duration,
-                'rc': 1
-            })
-            self.write_metrics_to_influx(self.current, duration, 1)
 
-    def v2_runner_on_ok(self, result):
-        self._display.vvvv('Profiler: result: %s' % result._result)
-        if self.current is not None:
-            duration = time.time_ns() - self.stats[self.current]['start']
-            self.stats[self.current].update({
+            invoked_args = result._result['invocation']['module_args']
+            attrs = {
                 'changed': result._result['changed'],
-                'result': result._result,
-                'end': time.time_ns(),
-                'duration': duration,
-                'rc': 0
-            })
-            self.write_metrics_to_influx(self.current, duration, 0)
-
-    def v2_runner_on_failed(self, result, ignore_errors=False):
-        if self.current is not None:
-            duration = time.time_ns() - self.stats[self.current]['start']
-            rc = 3 if not ignore_errors else 2
-            self.stats[self.current].update({
-                'changed': result._result['changed'],
-                'result': result._result,
                 'end': time.time_ns(),
                 'duration': duration,
                 'rc': rc
-            })
+            }
+            if 'availability_zone' in invoked_args:
+                attrs['az'] = invoked_args['availability_zone']
+
+            self.stats[self.current].update(attrs)
+
             self.write_metrics_to_influx(self.current, duration, rc)
+
+    def v2_runner_on_skipped(self, result):
+        # Task was skipped - remove stats
+        self._update_task_stats(result, 1)
+
+    def v2_runner_on_ok(self, result):
+        self._display.vvvv('Profiler: result: %s' % result._result)
+        self._update_task_stats(result, 0)
+
+    def v2_runner_on_failed(self, result, ignore_errors=False):
+        rc = 3 if not ignore_errors else 2
+        self._update_task_stats(result, rc)
 
     def write_metrics_to_influx(self, task, duration, rc):
         task_data = self.stats[task]
