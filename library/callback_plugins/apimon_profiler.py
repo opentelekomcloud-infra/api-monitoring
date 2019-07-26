@@ -252,16 +252,19 @@ class CallbackModule(CallbackBase):
     def _update_task_stats(self, result, rc):
         if self.current is not None:
             duration = time.time_ns() - self.stats[self.current]['start']
+            self._display.display('result is %s' % result._result)
 
-            invoked_args = result._result['invocation']['module_args']
+            invoked_args = result._result.get('invocation')
             attrs = {
                 'changed': result._result['changed'],
                 'end': time.time_ns(),
                 'duration': duration,
                 'rc': rc
             }
-            if 'availability_zone' in invoked_args:
-                attrs['az'] = invoked_args['availability_zone']
+            if (isinstance(invoked_args, dict)
+                    and 'module_args' in invoked_args):
+                if 'availability_zone' in invoked_args.get('module_args'):
+                    attrs['az'] = invoked_args['availability_zone']
 
             self.stats[self.current].update(attrs)
 
