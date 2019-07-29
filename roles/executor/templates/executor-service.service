@@ -11,7 +11,8 @@ Group=executor
 Environment=EXECUTOR_IMAGE=agoncharov/task_executor
 EnvironmentFile=/home/executor/env
 
-ExecStartPre=-/usr/bin/podman rm executor
+ExecStartPre=-/usr/bin/podman system migrate
+ExecStartPre=-/usr/bin/podman rm "executor"
 
 ExecStart=/bin/sh -c "/usr/bin/podman run \
   --add-host=telegraf:$(ifconfig $(ip route | awk '/default/ { print $5 }') | grep 'inet ' | awk '{print $2}') \
@@ -21,11 +22,11 @@ ExecStart=/bin/sh -c "/usr/bin/podman run \
   -v ~executor/.config/openstack:/etc/openstack:ro \
   ${EXECUTOR_IMAGE}"
 
-ExecReload=-/usr/bin/podman stop -t 120 executor
-ExecReload=-/usr/bin/podman rm executor
+ExecReload=-/usr/bin/podman stop -t 300 "executor"
+ExecReload=-/usr/bin/podman rm "executor"
 
-ExecStop=/usr/bin/podman stop -t 120 executor
-ExecStop=/usr/bin/podman rm executor
+ExecStop=/usr/bin/podman stop -t 300 "executor"
+ExecStop=/usr/bin/podman rm "executor"
 
 [Install]
 WantedBy=multi-user.target
