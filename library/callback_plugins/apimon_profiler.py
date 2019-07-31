@@ -85,6 +85,7 @@ Playbook run took 0 days, 0 hours, 0 minutes, 2 seconds
 import collections
 import time
 import os
+import logging
 
 from ansible.module_utils.six.moves import reduce
 from ansible.module_utils._text import to_text
@@ -317,7 +318,7 @@ class CallbackModule(CallbackBase):
             self._display.warning('Profiler: Error writing data to'
                                   'influxdb: %s' % e)
 
-    def playbook_on_stats(self, stats):
+    def v2_playbook_on_stats(self, stats):
         global te, t0
         te = time.time_ns()
         self._display.display(tasktime())

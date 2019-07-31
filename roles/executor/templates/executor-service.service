@@ -20,6 +20,8 @@ ExecStart=/bin/sh -c "/usr/bin/podman run \
   -e EXECUTOR_REPO_URL=${EXECUTOR_REPO_URL} \
   -e OS_CLOUD=cloud_project_scope \
   -v ~executor/.config/openstack:/etc/openstack:ro \
+  -v /etc/apimon_executor:/etc/apimon_executor:Z \
+  -v /var/log/executor:/var/log/executor:Z \
   ${EXECUTOR_IMAGE}"
 
 ExecReload=-/usr/bin/podman stop -t 300 "executor"

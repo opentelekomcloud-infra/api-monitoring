@@ -28,6 +28,12 @@
     state: directory
     recurse: true
 
+- name: Create executor config dir
+  become: true
+  file:
+    dest: /etc/apimon_executor
+    state: directory
+
 - name: Write clouds.yaml
   become: true
   become_user: executor
@@ -41,6 +47,18 @@
   template:
     src: "env"
     dest: "~executor/env"
+
+- name: Write logging config
+  become: true
+  copy:
+    src: logging.conf
+    dest: /etc/apimon_executor/logging.conf
+
+- name: Write executor config
+  become: true
+  template:
+    src: executor.yaml.j2
+    dest: executor.yaml
 
 - name: Enable Executor Systemd service
   become: true
