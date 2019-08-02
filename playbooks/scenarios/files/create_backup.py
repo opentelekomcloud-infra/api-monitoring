@@ -14,4 +14,4 @@ snapshot_id = snapshots[0].id
 
 
 backup = conn.block_storage.create_backup(volume_id=volume_id, snapshot_id=snapshot_id, name=sys.argv[3])
-conn.block_storage.wait_for_status(backup,status='available')
+conn.block_storage.wait_for_status(backup,status='available',wait=300)
