@@ -44,6 +44,8 @@
   file:
     path: /var/lib/grafana
     mode: 0775
+    group: grafana
+    owner: grafana
 
 - name: Write Grafana config env file
   become: true
@@ -86,7 +88,7 @@
   systemd:
     name: "{{ grafana_systemd_service_name }}"
     enabled: true
-    state: "started"
+    state: "restarted"
     daemon_reload: true
 
 - name: Enable Firewalld port 3000
