@@ -12,7 +12,7 @@ clouds_yaml_content: |
      password: barfoo
      measurement: openstack_api
   clouds:
-    otc:
+    cloud_project_scope:
       auth:
         auth_url: https://iam.eu-de.otc.t-systems.com:443/v3
         project_name: {{ test_project_name }}

@@ -69,6 +69,11 @@ clouds:
     block_store_api_version: 3
 ```
 File clouds.yaml can be stored in ~/.config/openstack . Section 'metrics' on the localhost is needed only when you are using developer setup (read at the end of the README).
+Before the infrastructure deployment, make sure that all git submodules are also installed
+```
+    git submodule init
+    git submodule update
+```
 
 ```
     ansible-playbook -i inventory/production playbooks/install/provision_infra.yaml
@@ -94,6 +99,11 @@ The next step will be to configure connections and inventory with the newly crea
 
 4. Modify inventory/production/group_vars/grafana.yaml with proper initial secret for grafana admin user. One option would be to execute `< /dev/urandom tr -fc _A-Z-a-z-0-9 | head -c${1:-32};echo;`
 
+5. If not using external database for Grafana then remove the following entry from the roles/grafana/templates/env
+
+```
+GF_DATABASE_URL={{ grafana_db_url }}
+```
 
 ### Installation
 
