@@ -28,6 +28,12 @@
     state: directory
     recurse: true
 
+- name: Create executor log dir
+  become: true
+  file:
+    dest: /var/log/executor
+    state: directory
+
 - name: Create executor config dir
   become: true
   file:
@@ -58,7 +64,7 @@
   become: true
   template:
     src: executor.yaml.j2
-    dest: executor.yaml
+    dest: /etc/apimon_executor/executor.yaml
 
 - name: Enable Executor Systemd service
   become: true
