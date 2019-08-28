@@ -33,6 +33,8 @@
   file:
     dest: /var/log/executor
     state: directory
+    owner: executor
+    group: executor
 
 - name: Create executor config dir
   become: true
