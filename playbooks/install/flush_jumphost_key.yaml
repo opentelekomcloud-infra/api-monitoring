@@ -1,0 +1,9 @@
+---
+- name: Write bastion/jump host ssh key to FS
+  hosts: localhost
+  tasks:
+    - name: Copy bastion SSH key
+      copy:
+        content: "{{ vault_bastion_ssh_key }}"
+        dest: "{{ playbook_dir }}/bastion_ssh_key"
+        mode: 0400

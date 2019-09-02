@@ -1,0 +1,11 @@
+---
+- import_playbook: flush_jumphost_key.yaml
+
+- name: Update targets
+  hosts: all
+  tasks:
+    - name: Update
+      become: yes
+      package: 
+        name: "*"
+        state: latest
