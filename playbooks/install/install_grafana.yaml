@@ -1,7 +1,8 @@
 ---
 # Playbook to install InfluxDB
+- import_playbook: flush_jumphost_key.yaml
 
 - name: Provision Grafana
   hosts: grafana
   roles:
-    - grafana
+    - opentelekomcloud_infra.grafana

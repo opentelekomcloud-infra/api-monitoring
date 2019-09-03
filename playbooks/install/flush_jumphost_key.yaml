@@ -7,3 +7,4 @@
         content: "{{ vault_bastion_ssh_key }}"
         dest: "{{ playbook_dir }}/bastion_ssh_key"
         mode: 0400
+      # when: skip_jumphost_key_flush is not defined or not skip_jumphost_key_flush
