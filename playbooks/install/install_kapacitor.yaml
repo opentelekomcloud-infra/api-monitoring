@@ -1,0 +1,20 @@
+---
+# Playbook to install kapacitor using Galaxy role
+#
+# Required variables:
+# kapacitor_os_user
+# kapacitor_os_group
+# kapacitor_image_tag
+#
+# influxdb_user_name
+# influxdb_user_password
+
+- import_playbook: flush_jumphost_key.yaml
+
+- name: Install Kapacitor
+  hosts: kapacitor
+  vars:
+    kapacitor_influxdb_user_name: "{{ influxdb_user_name }}"
+    kapacitor_influxdb_user_password: "{{ influxdb_user_password }}"
+  roles:
+    - name: opentelekomcloud_infra.kapacitor
