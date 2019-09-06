@@ -4,7 +4,7 @@ inventory/production
 __pycache__
 *.retry
 playbooks/install/credentials/*
-playbooks/install/bastion_ssh_key
+playbooks/install/*_ssh_key
 *.swp
 *.swo
 **/*.swp

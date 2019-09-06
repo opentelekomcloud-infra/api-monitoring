@@ -1,0 +1,26 @@
+---
+# Creates a user on InfluxDB
+#
+# Expected, that following variables are populated:
+# influxdb_hostname
+# influxdb_admin_user_name
+# influxdb_admin_user_password
+# influxdb_enable_ssl
+# influxdb_validate_cert
+#
+# influxdb_apimon_db_name
+# influxdb_user_name
+# influxdb_user_password
+
+- import_playbook: flush_jumphost_key.yaml
+
+- name: Create user
+  hosts: influxdb
+  vars:
+    influxdb_user_grants:
+      - database: "{{ influxdb_apimon_db_name }}"
+        privilege: "WRITE"
+  tasks:
+    - import_role:
+        name: opentelekomcloud-infra.influxdb
+        tasks_from: create_user.yaml
