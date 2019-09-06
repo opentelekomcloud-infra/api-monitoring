@@ -22,5 +22,5 @@
         privilege: "WRITE"
   tasks:
     - import_role:
-        name: opentelekomcloud-infra.influxdb
+        name: opentelekomcloud_infra.influxdb
         tasks_from: create_user.yaml
