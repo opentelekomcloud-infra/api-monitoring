@@ -6,15 +6,21 @@
 # kapacitor_os_group
 # kapacitor_image_tag
 #
-# influxdb_user_name
-# influxdb_user_password
+# # NOTE: Kapacitor "requires" admin privileges in Influx to run properly
+# influxdb_admin_user_name
+# influxdb_admin_user_password
+#
+# influxdb_hostname
+# influxdb_use_ssl
+# influxdb_skip_verify
+
 
 - import_playbook: flush_jumphost_key.yaml
 
 - name: Install Kapacitor
   hosts: kapacitor
   vars:
-    kapacitor_influxdb_user_name: "{{ influxdb_user_name }}"
-    kapacitor_influxdb_user_password: "{{ influxdb_user_password }}"
+    kapacitor_influxdb_user_name: "{{ influxdb_admin_user_name }}"
+    kapacitor_influxdb_user_password: "{{ influxdb_admin_user_password }}"
   roles:
-    - name: opentelekomcloud_infra.kapacitor
+    - opentelekomcloud_infra.kapacitor
