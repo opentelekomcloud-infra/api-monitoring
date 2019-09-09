@@ -2,6 +2,9 @@
 # Enable certbot on the target machine to generate certificates
 #
 
+
+- import_playbook: flush_jumphost_key.yaml
+
 - hosts: all
   vars: 
     certbot_auto_renew: true
