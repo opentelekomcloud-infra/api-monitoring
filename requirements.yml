@@ -4,7 +4,7 @@
   - name: opentelekomcloud_infra.telegraf
   - name: opentelekomcloud_infra.apimon_executor
   - name: opentelekomcloud_infra.kapacitor
-  - name: geerlingguy.certbot
+  - name: opentelekomcloud_infra.certbot
   - name: opentelekomcloud.vpc
     # src: https://github.com/opentelekomcloud/ansible-role-otc-vpc.git
   - name: opentelekomcloud.keypair
