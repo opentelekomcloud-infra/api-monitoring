@@ -6,6 +6,8 @@
 - import_playbook: flush_jumphost_key.yaml
 
 - hosts: all
+  become: true
+  gather_facts: true
   vars: 
     certbot_auto_renew: true
     certbot_auto_renew_user: "{{ ansible_user | default(lookup('env', 'USER')) }}" 
@@ -17,4 +19,4 @@
 
   roles:
     - role: geerlingguy.certbot
-      when: certbot_certs is defined
+      when: hostvars[inventory_hostname].certbot_certs is defined
