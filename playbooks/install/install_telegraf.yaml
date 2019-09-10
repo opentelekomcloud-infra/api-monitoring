@@ -1,0 +1,30 @@
+---
+# Install telegraf component to the target hosts
+#
+# This playbook requires following variables
+# telegraf_image_tag 
+# telegraf_tags (dict of tags to be set for the instance)
+# telegraf_os_user
+# telegraf_os_group
+#
+# telegraf_output_influxdb_enable
+# telegraf_output_influxdb_host
+# telegraf_output_influxdb_port
+# telegraf_output_influxdb_db_name
+# telegraf_output_influxdb_user_name
+# telegraf_output_influxdb_user_password
+#
+# telegraf_input_influxdb_enable
+# telegraf_input_influxdb_user_name
+# telegraf_input_influxdb_user_password
+#
+# telegraf_input_cpu_enable
+# telegraf_input_mem_enable
+
+- import_playbook: flush_jumphost_key.yaml
+
+- hosts: telegraf
+  become: true
+  gather_facts: true
+  roles:
+    - opentelekomcloud_infra.telegraf
