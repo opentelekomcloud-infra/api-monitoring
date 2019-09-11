@@ -5,6 +5,8 @@
   - name: opentelekomcloud_infra.apimon_executor
   - name: opentelekomcloud_infra.kapacitor
   - name: opentelekomcloud_infra.certbot
+    src: https://github.com/opentelekomcloud-infra/ansible-role-certbot.git
+    version: master
   - name: opentelekomcloud.vpc
     # src: https://github.com/opentelekomcloud/ansible-role-otc-vpc.git
   - name: opentelekomcloud.keypair
