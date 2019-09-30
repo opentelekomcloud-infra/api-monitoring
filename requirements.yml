@@ -1,6 +1,8 @@
 ---
   - name: opentelekomcloud_infra.grafana
   - name: opentelekomcloud_infra.influxdb
+    src: https://github.com/opentelekomcloud-infra/ansible-role-influxdb.git
+    version: master
   - name: opentelekomcloud_infra.telegraf
   - name: opentelekomcloud_infra.apimon_executor
   - name: opentelekomcloud_infra.kapacitor
