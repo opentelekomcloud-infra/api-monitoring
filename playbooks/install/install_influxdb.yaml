@@ -4,4 +4,4 @@
 - name: Provision InfluxDB
   hosts: influxdb
   roles:
-    - influxdb
+    - opentelekomcloud-infra.influxdb
