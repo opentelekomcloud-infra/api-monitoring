@@ -1,55 +1,19 @@
 ---
 # Playbook to install Executor
+#
+# This playbook requires following variables
+#
+# executor_apimon_repo_url
+# executor_apimon_repo_ref
+# executor_apimon_repo_location
+# clouds_yaml_content
 
-- name: Prompt
-  hosts: all
-  vars_prompt:
-    - name: influx_host
-      prompt: "Which influxdb (from inventory) should Executor/Telegraf be connected to"
-      default: influxdb1
-      private: no
-  tasks:
-
-    - add_host:
-        name: "{{ influx_host }}"
-        groups: target_influx_hosts
-
-    - set_fact:
-        influxdb_public_ip: "{{ hostvars[influx_host].influxdb_public_ip }}"
-        influxdb_port: 8086
-        influxdb_telegraf_user_name: telegraf
-        influxdb_telegraf_user_password: "{{ lookup('password', 'credentials/influx/' + influx_host + '/telegrafpassword length=15')}}"
-      no_log: True
-  tags: telegraf
-
-- name: Create Telegraf user in InfluxDB
-  hosts: target_influx_hosts
-  tags: telegraf
-  tasks:
-    - name: Create telegraf user in InfluxDB
-      influxdb_user:
-        user_name: "{{ influxdb_telegraf_user_name }}"
-        user_password: "{{ influxdb_telegraf_user_password }}"
-        grants:
-          - database: "{{ apimon_db_name }}"
-            privilege: "WRITE"
-        admin: no
-        login_username: "{{ influxdb_admin_user_name }}"
-        login_password: "{{ influxdb_admin_user_password }}"
-        hostname: "{{ influxdb_hostname }}"
-        ssl: yes
-        validate_certs: "{{ apimon_ssl_validate_cert }}"
-       
-- name: Provision Telegraf
-  hosts: telegraf
-  roles:
-    - telegraf
-  tags: telegraf
+- import_playbook: flush_jumphost_key.yaml
 
 - name: Provision Executor
   hosts: executor
   roles:
-    - executor
+    - opentelekomcloud_infra.apimon_executor
   tasks:
   tags: executor
 
