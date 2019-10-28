@@ -1,0 +1,21 @@
+---
+# Provision (create) Host for executor
+#
+# Vars:
+# executor_host_image (default: Standard_Fedora_30_latest)
+# executor_host_flavor (default: s2.xlarge.2)
+# executor_host_name
+# executor_host_availability_zone (default eu-de-03)
+# executor_host_root_volume_size (default 12)
+# executor_host_data_volume_size (default 100)
+# executor_host_security_groups
+# executor_host_network
+# executor_host_key_name
+
+- name: Provision executor
+  hosts: os_infra
+  tasks:
+    - name: Create server
+      include_role:
+        name: opentelekomcloud_infra.apimon_executor
+        tasks_from: provision_openstack.yaml
