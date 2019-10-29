@@ -1,0 +1,19 @@
+---
+# Playbook to install Executor
+#
+# This playbook requires following variables
+#
+# executor_apimon_repo_url
+# executor_apimon_repo_ref
+# executor_apimon_repo_location
+# clouds_yaml_content
+
+- import_playbook: flush_jumphost_key.yaml
+
+- name: Provision Executor
+  hosts: executor
+  roles:
+    - opentelekomcloud_infra.apimon_executor
+  tasks:
+  tags: executor
+
