@@ -1,0 +1,16 @@
+---
+# Write content of the ssh key for each of the bastion/jump hosts to let
+# ansible connect to the target system (especially relevant for AWX)
+#
+# This requires bastion_ssh_key variable to be defined for hosts in the
+# ``bastion`` group (variable defined on the host, and host is included in the
+# group).
+- name: Write bastion/jump host ssh key to FS
+  hosts: localhost
+  tasks:
+    - name: Write bastion SSH key
+      copy:
+        content: "{{ hostvars[item].ssh_key }}"
+        dest: "{{ playbook_dir }}/{{ item }}_ssh_key"
+        mode: 0400
+      loop: "{{ groups['bastion'] }}"
