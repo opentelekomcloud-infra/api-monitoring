@@ -12,6 +12,7 @@
 
 - name: Provision Executor
   hosts: executor
+  serial: 1
   roles:
     - opentelekomcloud_infra.apimon_executor
   tasks:
