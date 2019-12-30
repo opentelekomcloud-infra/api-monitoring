@@ -2,7 +2,7 @@
 # Install telegraf component to the target hosts
 #
 # This playbook requires following variables
-# telegraf_image_tag 
+# telegraf_image_tag
 # telegraf_tags (dict of tags to be set for the instance)
 # telegraf_os_user
 # telegraf_os_group
@@ -27,4 +27,5 @@
   become: true
   gather_facts: true
   roles:
+    - opentelekomcloud.server_common
     - opentelekomcloud_infra.telegraf
