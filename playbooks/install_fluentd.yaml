@@ -1,0 +1,8 @@
+---
+# Playbook to install Alerta
+- import_playbook: flush_jumphost_key.yaml
+
+- name: Provision Fluentd
+  hosts: fluentd
+  roles:
+    - opentelekomcloud_infra.fluentd

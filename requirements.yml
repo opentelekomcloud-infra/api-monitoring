@@ -5,6 +5,8 @@
     version: master
   - name: opentelekomcloud_infra.telegraf
     src: https://github.com/opentelekomcloud-infra/ansible-role-telegraf.git
+  - name: opentelekomcloud_infra.fluentd
+    src: https://github.com/opentelekomcloud-infra/ansible-role-fluentd.git
   - name: opentelekomcloud_infra.apimon_executor
     src: https://github.com/opentelekomcloud-infra/ansible-role-executor.git
     version: master
