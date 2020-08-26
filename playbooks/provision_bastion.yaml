@@ -1,0 +1,16 @@
+---
+# Provision (create) Host for bastion
+#
+# Vars:
+# server_name (default: bastion )
+# server_image (default: Standard_Fedora_30_latest)
+# server_flavor (default: s2.large.1)
+# security_group 
+
+- name: Provision bastion server 
+  hosts: os_infra
+  tasks:
+    - name: Create bastion server
+      include_role:
+        name: opentelekomcloud_infra.bastion
+        tasks_from: provision_openstack.yaml
