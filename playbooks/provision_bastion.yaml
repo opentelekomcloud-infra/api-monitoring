@@ -12,4 +12,4 @@
   tasks:
     - name: Create bastion server
       include_role:
-        name: opentelekomcloud_infra.bastion
+        name: opentelekomcloud.bastion
