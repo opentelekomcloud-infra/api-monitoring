@@ -10,6 +10,10 @@
 - name: Provision bastion server 
   hosts: os_infra
   tasks:
+    - name: Create VPC
+      include_role:
+        name: opentelekomcloud.vpc
     - name: Create bastion server
       include_role:
         name: opentelekomcloud.bastion
+ 
