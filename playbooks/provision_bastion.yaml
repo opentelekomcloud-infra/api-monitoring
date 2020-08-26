@@ -13,4 +13,3 @@
     - name: Create bastion server
       include_role:
         name: opentelekomcloud_infra.bastion
-        tasks_from: provision_openstack.yaml
