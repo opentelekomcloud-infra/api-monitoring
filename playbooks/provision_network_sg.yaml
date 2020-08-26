@@ -1,0 +1,33 @@
+---
+# Provision (create) Network/VPC, Security Group for APImon
+#
+# Vars:
+# network_name (default apimon-otc-net)
+# 
+
+- name: Provision VPC
+  hosts: os_infra
+  tasks:
+    - name: Create VPC
+      include_role:
+        name: opentelekomcloud.vpc
+    - name: Create security groups
+      include_role:
+        name: opentelekomcloud.security_group
+        apply:
+          tags: sg
+      vars:
+        securitygroup_name: "{{ sg.name }}"
+        rules: "{{ sg.rules }}"
+        description: "{{ sg.descr }}"
+      loop:
+        - {name: "{{common_sg_name}}", rules: "{{common_sg_rules}}",
+           descr: "Common SG for APIMon"}
+        - {name: "{{executor_sg_name}}", rules: "{{executor_sg_rules}}",
+           descr: "Executor SG for APIMon"}
+        - {name: "{{influxdb_sg_name}}", rules: "{{influxdb_sg_rules}}",
+           descr: "InfluxDB SG for APIMon"}
+      loop_control:
+        loop_var: sg
+
+        
