@@ -25,8 +25,6 @@
            descr: "Common SG for APIMon"}
         - {name: "{{executor_sg_name}}", rules: "{{executor_sg_rules}}",
            descr: "Executor SG for APIMon"}
-        - {name: "{{influxdb_sg_name}}", rules: "{{influxdb_sg_rules}}",
-           descr: "InfluxDB SG for APIMon"}
       loop_control:
         loop_var: sg
 
