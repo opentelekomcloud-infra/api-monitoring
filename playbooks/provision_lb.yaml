@@ -60,6 +60,9 @@
         haproxy_listeners: "{{ listeners| default({}) | combine({ item.item.name: item.id }) }}"
       with_items: "{{ haproxy_listener_results.results }}"
     
+    - debug:
+        msg "influxdb listeners {{ influxdb_listeners }}"
+    
     - name: Create "{{ influxdb_lb_name }}" pools
       otc_pool:
         name: "{{ item.name }}"
