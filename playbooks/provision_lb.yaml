@@ -38,8 +38,8 @@
         protocol_port: "{{ item.port }}"
       register: influxdb_listener_results
       loop:
-        - {name: "listener_8086", protocol: "TCP", port: 8086}
-        - {name: "listener_80", protocol: "TCP", port: 80}
+        - {name: "lsnr_8086_influxdb", protocol: "TCP", port: 8086}
+        - {name: "lsnr_80_influxdb", protocol: "TCP", port: 80}
 
     - name: Create "{{ haproxy_lb_name }}" Listeners
       otc_listener:
@@ -49,8 +49,8 @@
         protocol_port: "{{ item.port }}"
       register: haproxy_listener_results
       loop:
-        - {name: "listener_443", protocol: "TCP", port: 443}
-        - {name: "listener_80", protocol: "TCP", port: 80}
+        - {name: "lsnr_443_haproxy", protocol: "TCP", port: 443}
+        - {name: "lsnr_80_haproxy", protocol: "TCP", port: 80}
         
     - set_fact:
         influxdb_listeners: "{{ influxdb_listeners| default({}) | combine({ item.item.name: item.id }) }}"
@@ -70,9 +70,9 @@
         session_persistence:
           type: SOURCE_IP
       loop:
-        - {name: "pool_8086", listener: "{{ influxdb_listeners.listener_8086 }}",
+        - {name: "pool_8086_influxdb", listener: "{{ influxdb_listeners.lsnr_8086_influxdb }}",
            descr: "8086 Pool", protocol: "TCP", algo: "SOURCE_IP"}
-        - {name: "pool_80", listener: "{{ influxdb_listeners.listener_80 }}",
+        - {name: "pool_80_influxdb", listener: "{{ influxdb_listeners.lsnr_80_influxdb }}",
            descr: "80 Pool", protocol: "TCP", algo: "SOURCE_IP"}
       register:
         influxdb_pool_results
@@ -87,9 +87,9 @@
         session_persistence:
           type: SOURCE_IP
       loop:
-        - {name: "pool_443", listener: "{{ haproxy_listeners.listener_443 }}",
+        - {name: "pool_443_haproxy", listener: "{{ haproxy_listeners.lsnr_443_haproxy }}",
            descr: "443 Pool", protocol: "TCP", algo: "SOURCE_IP"}
-        - {name: "pool_80", listener: "{{ haproxy_listeners.listener_80 }}",
+        - {name: "pool_80_haproxy", listener: "{{ haproxy_listeners.lsnr_80_haproxy }}",
            descr: "80 Pool", protocol: "TCP", algo: "SOURCE_IP"}
       register:
         haproxy_pool_results
@@ -114,28 +114,28 @@
    
     - name: Register 8086 in the InfluxDB LB
       otc_member:
-        pool: "{{ influxdb_pools.pool_8086 }}"
+        pool: "{{ influxdb_pools.pool_8086_influxdb }}"
         address: "{{ influx_server.ansible_facts.openstack_servers[0].private_v4 }}"
         subnet_id: "{{ subnet_id }}"
         protocol_port: 8086
     
     - name: Register 80 in the InfluxDB LB
       otc_member:
-        pool: "{{ influxdb_pools.pool_80 }}"
+        pool: "{{ influxdb_pools.pool_80_influxdb }}"
         address: "{{ influx_server.ansible_facts.openstack_servers[0].private_v4 }}"
         subnet_id: "{{ subnet_id }}"
         protocol_port: 80
 
     - name: Register 80 in the Haproxy LB
       otc_member:
-        pool: "{{ haproxy_pools.pool_80 }}"
+        pool: "{{ haproxy_pools.pool_80_haproxy }}"
         address: "{{ haproxy_server.ansible_facts.openstack_servers[0].private_v4 }}"
         subnet_id: "{{ subnet_id }}"
         protocol_port: 80
     
     - name: Register 443 in the Haproxy LB
       otc_member:
-        pool: "{{ haproxy_pools.pool_443 }}"
+        pool: "{{ haproxy_pools.pool_443_haproxy }}"
         address: "{{ haproxy_server.ansible_facts.openstack_servers[0].private_v4 }}"
         subnet_id: "{{ subnet_id }}"
         protocol_port: 443
