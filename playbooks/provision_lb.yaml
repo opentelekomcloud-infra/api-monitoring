@@ -1,0 +1,86 @@
+---
+# This playbook creates two LoadBalancers, one for web-proxy and other for influx
+#
+
+# 
+- name: Create ELB
+  hosts: os_infra
+  tasks:
+    - name: Find subnet
+      os_subnets_facts:
+        name: "{{ ( prefix + 'default-subnet') }}"
+      register: subnets
+
+    - set_fact:
+        subnet_id: "{{ subnets.ansible_facts.openstack_subnets[0].id }}"
+    
+    - name: Create "{{ haproxy_lb_name }}" LB
+      otc_loadbalancer:
+        name: "{{ haproxy_lb_name }}"
+        state: present
+        vip_subnet: "{{ subnet_id }}"
+        auto_public_ip: true
+      register: web-proxy
+ 
+    - name: Create "{{ influxdb_lb_name }}" LB
+      otc_loadbalancer:
+        name: "{{ influxdb_lb_name }}"
+        state: present
+        vip_subnet: "{{ subnet_id }}"
+        auto_public_ip: true
+      register: influxdb
+
+    - name: Create "{{ influxdb_lb_name }}" Listeners
+      otc_listener:
+        name: "{{ item.name }}"
+        loadbalancer: "{{ apimon_lb.id }}"
+        protocol: "{{ item.protocol }}"
+        protocol_port: "{{ item.port }}"
+      register: listener_results
+      loop:
+        - {name: "listener-8086", protocol: "TCP", port: 8086}
+        - {name: "listener-80", protocol: "TCP", port: 80}
+
+    - set_fact:
+        listeners: "{{ listeners| default({}) | combine({ item.item.name: item.id }) }}"
+      with_items: "{{ listener_results.results }}"
+
+    - name: Create "{{ influxdb_lb_name }}" pools
+      otc_pool:
+        name: "{{ item.name }}"
+        listener: "{{ item.listener }}"
+        description: "{{ item.descr }}"
+        protocol: "{{ item.protocol }}"
+        lb_algorithm: "{{ item.algo }}"
+        session_persistence:
+          type: SOURCE_IP
+      loop:
+        - {name: "pool-8086", listener: "{{ listeners.listener-8086 }}",
+           descr: "8086 Pool", protocol: "TCP", algo: "SOURCE_IP"}
+        - {name: "pool-80", listener: "{{ listeners.listener-80 }}",
+           descr: "80 Pool", protocol: "TCP", algo: "SOURCE_IP"}
+      register:
+        pool_results
+
+    - set_fact:
+        pools: "{{ pools| default({}) | combine({ item.item.name: item.id }) }}"
+      with_items: "{{ pool_results.results }}"
+
+    - name: Find InfluxDB data
+      os_server_facts:
+        server: "{{ influxdb_host_server_fqdn }}"
+      register: influx_server    
+   
+    - name: Register 8086 in the LB
+      otc_member:
+        pool: "{{ pools.pool-8086 }}"
+        address: "{{ influx_server.ansible_facts.openstack_servers[0].private_v4 }}"
+        subnet_id: "{{ subnet_id }}"
+        protocol_port: 8086
+    
+    - name: Register 80 in the LB
+      otc_member:
+        pool: "{{ pools.pool-80 }}"
+        address: "{{ influx_server.ansible_facts.openstack_servers[0].private_v4 }}"
+        subnet_id: "{{ subnet_id }}"
+        protocol_port: 80
