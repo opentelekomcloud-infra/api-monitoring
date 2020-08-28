@@ -98,21 +98,44 @@
         influxdb_pools: "{{ influxdb_pools| default({}) | combine({ item.item.name: item.id }) }}"
       with_items: "{{ influxdb_pool_results.results }}"
 
+    - set_fact:
+        haproxy_pools: "{{ haproxy_pools| default({}) | combine({ item.item.name: item.id }) }}"
+      with_items: "{{ haproxy_pool_results.results }}"
+
     - name: Find InfluxDB data
       os_server_facts:
         server: "{{ influxdb_host_server_fqdn }}"
       register: influx_server    
    
-    - name: Register 8086 in the LB
+   - name: Find Haproxy data
+      os_server_facts:
+        server: "{{ haproxy_host_server_fqdn }}"
+      register: haproxy_server 
+   
+    - name: Register 8086 in the InfluxDB LB
       otc_member:
         pool: "{{ influxdb_pools.pool_8086 }}"
         address: "{{ influx_server.ansible_facts.openstack_servers[0].private_v4 }}"
         subnet_id: "{{ subnet_id }}"
         protocol_port: 8086
     
-    - name: Register 80 in the LB
+    - name: Register 80 in the InfluxDB LB
       otc_member:
         pool: "{{ influxdb_pools.pool_80 }}"
         address: "{{ influx_server.ansible_facts.openstack_servers[0].private_v4 }}"
         subnet_id: "{{ subnet_id }}"
         protocol_port: 80
+
+   - name: Register 80 in the Haproxy LB
+      otc_member:
+        pool: "{{ haproxy_pools.pool_80 }}"
+        address: "{{ haproxy_server.ansible_facts.openstack_servers[0].private_v4 }}"
+        subnet_id: "{{ subnet_id }}"
+        protocol_port: 80
+    
+    - name: Register 443 in the Haproxy LB
+      otc_member:
+        pool: "{{ haproxy_pools.pool_443 }}"
+        address: "{{ haproxy_server.ansible_facts.openstack_servers[0].private_v4 }}"
+        subnet_id: "{{ subnet_id }}"
+        protocol_port: 443
