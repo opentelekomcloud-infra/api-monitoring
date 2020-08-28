@@ -20,7 +20,7 @@
         state: present
         vip_subnet: "{{ subnet_id }}"
         auto_public_ip: true
-      register: web-proxy
+      register: haproxy
  
     - name: Create "{{ influxdb_lb_name }}" LB
       otc_loadbalancer:
@@ -33,7 +33,7 @@
     - name: Create "{{ influxdb_lb_name }}" Listeners
       otc_listener:
         name: "{{ item.name }}"
-        loadbalancer: "{{ apimon_lb.id }}"
+        loadbalancer: "{{ influxdb.id }}"
         protocol: "{{ item.protocol }}"
         protocol_port: "{{ item.port }}"
       register: listener_results
