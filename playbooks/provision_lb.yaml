@@ -56,7 +56,7 @@
         influxdb_listeners: "{{ listeners| default({}) | combine({ item.item.name: item.id }) }}"
       with_items: "{{ influxdb_listener_results.results }}"
 
-     - set_fact:
+    - set_fact:
         haproxy_listeners: "{{ listeners| default({}) | combine({ item.item.name: item.id }) }}"
       with_items: "{{ haproxy_listener_results.results }}"
     
