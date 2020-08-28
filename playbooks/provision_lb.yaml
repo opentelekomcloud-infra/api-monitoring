@@ -78,7 +78,7 @@
         influxdb_pool_results
 
     - set_fact:
-        influxdb_pools: "{{ pools| default({}) | combine({ item.item.name: item.id }) }}"
+        influxdb_pools: "{{ influxdb_pools| default({}) | combine({ item.item.name: item.id }) }}"
       with_items: "{{ influxdb_pool_results.results }}"
 
     - name: Find InfluxDB data
