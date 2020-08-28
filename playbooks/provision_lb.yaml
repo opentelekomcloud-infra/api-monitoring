@@ -36,7 +36,7 @@
         loadbalancer: "{{ influxdb.id }}"
         protocol: "{{ item.protocol }}"
         protocol_port: "{{ item.port }}"
-      register: listener_results
+      register: influxdb_listener_results
       loop:
         - {name: "listener_8086", protocol: "TCP", port: 8086}
         - {name: "listener_80", protocol: "TCP", port: 80}
@@ -47,15 +47,19 @@
         loadbalancer: "{{ haproxy.id }}"
         protocol: "{{ item.protocol }}"
         protocol_port: "{{ item.port }}"
-      register: listener_results
+      register: haproxy_listener_results
       loop:
         - {name: "listener_443", protocol: "TCP", port: 443}
         - {name: "listener_80", protocol: "TCP", port: 80}
         
     - set_fact:
-        listeners: "{{ listeners| default({}) | combine({ item.item.name: item.id }) }}"
-      with_items: "{{ listener_results.results }}"
+        influxdb_listeners: "{{ listeners| default({}) | combine({ item.item.name: item.id }) }}"
+      with_items: "{{ influxdb_listener_results.results }}"
 
+     - set_fact:
+        haproxy_listeners: "{{ listeners| default({}) | combine({ item.item.name: item.id }) }}"
+      with_items: "{{ haproxy_listener_results.results }}"
+    
     - name: Create "{{ influxdb_lb_name }}" pools
       otc_pool:
         name: "{{ item.name }}"
@@ -66,16 +70,16 @@
         session_persistence:
           type: SOURCE_IP
       loop:
-        - {name: "pool_8086", listener: "{{ listeners.listener_8086 }}",
+        - {name: "pool_8086", listener: "{{ influxdb_listeners.listener_8086 }}",
            descr: "8086 Pool", protocol: "TCP", algo: "SOURCE_IP"}
-        - {name: "pool_80", listener: "{{ listeners.listener_80 }}",
+        - {name: "pool_80", listener: "{{ influxdb_listeners.listener_80 }}",
            descr: "80 Pool", protocol: "TCP", algo: "SOURCE_IP"}
       register:
-        pool_results
+        influxdb_pool_results
 
     - set_fact:
-        pools: "{{ pools| default({}) | combine({ item.item.name: item.id }) }}"
-      with_items: "{{ pool_results.results }}"
+        influxdb_pools: "{{ pools| default({}) | combine({ item.item.name: item.id }) }}"
+      with_items: "{{ influxdb_pool_results.results }}"
 
     - name: Find InfluxDB data
       os_server_facts:
@@ -84,14 +88,14 @@
    
     - name: Register 8086 in the LB
       otc_member:
-        pool: "{{ pools.pool_8086 }}"
+        pool: "{{ influxdb_pools.pool_8086 }}"
         address: "{{ influx_server.ansible_facts.openstack_servers[0].private_v4 }}"
         subnet_id: "{{ subnet_id }}"
         protocol_port: 8086
     
     - name: Register 80 in the LB
       otc_member:
-        pool: "{{ pools.pool_80 }}"
+        pool: "{{ influxdb_pools.pool_80 }}"
         address: "{{ influx_server.ansible_facts.openstack_servers[0].private_v4 }}"
         subnet_id: "{{ subnet_id }}"
         protocol_port: 80
