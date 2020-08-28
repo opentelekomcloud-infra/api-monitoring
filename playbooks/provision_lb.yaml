@@ -77,6 +77,23 @@
       register:
         influxdb_pool_results
 
+    - name: Create "{{ haproxy_lb_name }}" pools
+      otc_pool:
+        name: "{{ item.name }}"
+        listener: "{{ item.listener }}"
+        description: "{{ item.descr }}"
+        protocol: "{{ item.protocol }}"
+        lb_algorithm: "{{ item.algo }}"
+        session_persistence:
+          type: SOURCE_IP
+      loop:
+        - {name: "pool_443", listener: "{{ haproxy_listeners.listener_443 }}",
+           descr: "443 Pool", protocol: "TCP", algo: "SOURCE_IP"}
+        - {name: "pool_80", listener: "{{ haproxy_listeners.listener_80 }}",
+           descr: "80 Pool", protocol: "TCP", algo: "SOURCE_IP"}
+      register:
+        haproxy_pool_results
+
     - set_fact:
         influxdb_pools: "{{ influxdb_pools| default({}) | combine({ item.item.name: item.id }) }}"
       with_items: "{{ influxdb_pool_results.results }}"
