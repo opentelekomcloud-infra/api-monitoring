@@ -38,8 +38,8 @@
         protocol_port: "{{ item.port }}"
       register: listener_results
       loop:
-        - {name: "listener-8086", protocol: "TCP", port: 8086}
-        - {name: "listener-80", protocol: "TCP", port: 80}
+        - {name: "listener_8086", protocol: "TCP", port: 8086}
+        - {name: "listener_80", protocol: "TCP", port: 80}
 
     - set_fact:
         listeners: "{{ listeners| default({}) | combine({ item.item.name: item.id }) }}"
@@ -55,9 +55,9 @@
         session_persistence:
           type: SOURCE_IP
       loop:
-        - {name: "pool-8086", listener: "{{ listeners.listener-8086 }}",
+        - {name: "pool_8086", listener: "{{ listeners.listener_8086 }}",
            descr: "8086 Pool", protocol: "TCP", algo: "SOURCE_IP"}
-        - {name: "pool-80", listener: "{{ listeners.listener-80 }}",
+        - {name: "pool_80", listener: "{{ listeners.listener_80 }}",
            descr: "80 Pool", protocol: "TCP", algo: "SOURCE_IP"}
       register:
         pool_results
@@ -73,14 +73,14 @@
    
     - name: Register 8086 in the LB
       otc_member:
-        pool: "{{ pools.pool-8086 }}"
+        pool: "{{ pools.pool_8086 }}"
         address: "{{ influx_server.ansible_facts.openstack_servers[0].private_v4 }}"
         subnet_id: "{{ subnet_id }}"
         protocol_port: 8086
     
     - name: Register 80 in the LB
       otc_member:
-        pool: "{{ pools.pool-80 }}"
+        pool: "{{ pools.pool_80 }}"
         address: "{{ influx_server.ansible_facts.openstack_servers[0].private_v4 }}"
         subnet_id: "{{ subnet_id }}"
         protocol_port: 80
