@@ -1,5 +1,5 @@
 ---
-# This playbook creates two LoadBalancers, one for web-proxy and other for influx
+# This playbook creates two LoadBalancers, one for haproxy and other for influx
 #
 
 # 
