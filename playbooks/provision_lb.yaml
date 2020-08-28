@@ -107,7 +107,7 @@
         server: "{{ influxdb_host_server_fqdn }}"
       register: influx_server    
    
-   - name: Find Haproxy data
+    - name: Find Haproxy data
       os_server_facts:
         server: "{{ haproxy_host_server_fqdn }}"
       register: haproxy_server 
@@ -126,7 +126,7 @@
         subnet_id: "{{ subnet_id }}"
         protocol_port: 80
 
-   - name: Register 80 in the Haproxy LB
+    - name: Register 80 in the Haproxy LB
       otc_member:
         pool: "{{ haproxy_pools.pool_80 }}"
         address: "{{ haproxy_server.ansible_facts.openstack_servers[0].private_v4 }}"
