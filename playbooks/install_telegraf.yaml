@@ -27,5 +27,5 @@
   become: true
   gather_facts: true
   roles:
-    - opentelekomcloud.server_common
-    - opentelekomcloud_infra.telegraf
+    - opentelekomcloud.common.server
+    - opentelekomcloud.common.telegraf
