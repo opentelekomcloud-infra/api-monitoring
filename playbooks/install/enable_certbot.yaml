@@ -18,5 +18,5 @@
     certbot_create_method: standalone
 
   roles:
-    - role: opentelekomcloud_infra.certbot
+    - role: opentelekomcloud_infra.certbot-update
       when: hostvars[inventory_hostname].certbot_certs is defined
